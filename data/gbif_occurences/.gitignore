@@ -1,0 +1,18 @@
+# Folders and files to ignore:
+__pycache__
+archive/
+filtered/
+notebook_img/
+raw/
+sampled/
+
+url_download_test.ipynb
+url_stats.r
+
+
+# File extensions to ignore:
+*.xlsx
+*.html
+
+
+
