@@ -15,7 +15,6 @@ import time
 import sys
 import json
 import pandas as pd
-# import concurrent.futures
 
 
 
@@ -49,30 +48,9 @@ def download_image(url: str, file_name: str, path: str):
 
 
 
-def download_images_concurrent(urls: list, files: list, path: str):
-    """
-    Download images concurrently using a thread pool.
-    The parallel download doesn't work fully though. Not sure why at the moment. 
-    It might be that the servers do not allow multiple downloads at the same time 
-    from the same IP (e.g the servers of iNaturalist).
-    """
-    # See https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor-example
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [executor.submit(download_image, url, file_name, path) for url, file_name, path in zip(urls, files, path)]
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                future.result()
-            except Exception as e:
-                print('%r generated an exception: %s' % e)
-
-
-
 if __name__ == '__main__':
     # Time the execution
     start = time.perf_counter()
-
-    # The parallel download doesn't work though. Download the images sequentially
-    # download_images_concurrent(urls, files, path)
 
     # Get the data frame path from the command line
     df_path = sys.argv[1]
