@@ -98,7 +98,8 @@ cd $repo_path
 module purge
 # Load the needed modules from the software tree 
 # (same ones used when we created the environment)
-module load fosscuda/2020b TensorFlow/2.5.0
+# module load fosscuda/2020b TensorFlow/2.5.0
+module load fosscuda/2019b TensorFlow/2.1.0-Python-3.7.4
 # Activate corresponding virtual environment
 source env/yolov5_2019b_tf21/bin/activate
 
