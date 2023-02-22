@@ -118,6 +118,11 @@ source utils/session_info.sh yolov5_2019b_tf21
 
 cd "$repo_path"/architectures/yolov5
 
+# Print the git tag
+echo 'Git tags:'
+git describe --tags
+printf '\n'
+
 python detect.py \
 --weights $weights \
 --source $source \
