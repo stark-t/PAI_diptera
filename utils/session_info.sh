@@ -4,21 +4,25 @@
 # This is useful for assuring reproducibility of our results as much as possible.
 # See also https://wiki.ufz.de/eve/index.php/Reproducible_Research
 
+# Arguments:
+# $1: name of the virtual environment folder (e.g. yolov5, created at .../env/)
+# $2: path to the log file. Needed for force-printing some of the information below suing 2>&1.
+# $3: path to the repository of the used architecture. Needed for printing the git tag.
+
+# For diagnostic purposes, print the arguments passed to the script
+echo '========================================================================'
+echo 'Virtual environment name: '$1
+echo 'log file path: '$2
+echo 'Architecture repository path: '$3
+echo '========================================================================'
+printf '\n'
+
 
 # Disply NVIDIA System Management Interface and store it in the output log file.
 echo '========================================================================'
 echo 'Output of: nvidia-smi'
 echo '========================================================================'
 nvidia-smi
-printf '\n'
-
-
-# Display the name of to virtual environment folder passed as the $1 argument to this script. 
-# Must be the name of the environment created at .../env/
-# For example, $1 can be yolov5 or yolov8
-echo '========================================================================'
-echo 'Virtual environment name: '$1
-echo '========================================================================'
 printf '\n'
 
 
@@ -57,11 +61,16 @@ printf '\n'
 
 
 # List all currently loaded modules in the environment.
+# NOTE: 
+# I had to use 2>&1 so that it redirects the output to the log file, instead of
+# printing it to the error file. It seems that `module --terse list` prints in
+# the standard error by default and not in the standard output (*.log file).
+# Also, `module --terse list | sort >> $2 2>&1` still prints in the error file.
 echo '========================================================================'
-echo 'List the toolchain (in alphabetical order)'
+echo 'List the toolchain modules'
 echo 'EasyBuild was used by EVE cluster administrators to deploy software.'
 echo '========================================================================'
-module --terse list | sort
+module --terse list >> $2 2>&1
 printf '\n'
 
 
@@ -77,6 +86,16 @@ echo '========================================================================'
 echo 'List of Python packages installed in the environment (in alphabetical order)'
 echo '========================================================================'
 pip list # pip displays the packages and their verison in alphabetical order by default.
+printf '\n'
+
+
+# cd to the architecture repository and print the git tag
+echo '========================================================================'
+echo 'Git tag of the architecture:'
+echo '========================================================================'
+cd $3
+git describe --tags >> $2 2>&1
+echo 'Architecture repository path: '$3
 printf '\n'
 
 

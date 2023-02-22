@@ -98,18 +98,22 @@ cd $repo_path
 module purge
 # Load the needed modules from the software tree 
 # (same ones used when we created the environment)
-# module load fosscuda/2020b TensorFlow/2.5.0
-module load fosscuda/2019b TensorFlow/2.1.0-Python-3.7.4
+module load GCCcore/10.2.0 Python/3.8.6
 # Activate corresponding virtual environment
-source env/yolov5_2019b_tf21/bin/activate
+source env/yolov5_simplified/bin/activate
 
 # Call the helper script session_info.sh which will print in the *.log file info 
 # about the used environment and hardware.
-source utils/session_info.sh yolov5_2019b_tf21
-# The argument here, passed to $1, is the environment name set at .../env/
+# The 1st argument below, passed to $1, is the environment name set at .../env/
+# The 2nd argument is the path to the log file.
+# The 3rd argument is the path to repository of the used architecture.
 # Use `source` instead of `bash`, so that session_info.sh describes the environment 
 # activated in this script (the parent script from which it is called). 
 # See https://askubuntu.com/a/965496/772524
+source utils/session_info.sh \
+yolov5_simplified \
+"$repo_path"/architectures/logs_detect_jobs/"$SLURM_JOB_ID".log \
+"$repo_path"/architectures/yolov5
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,11 +121,6 @@ source utils/session_info.sh yolov5_2019b_tf21
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 cd "$repo_path"/architectures/yolov5
-
-# Print the git tag
-echo 'Git tags:'
-git describe --tags
-printf '\n'
 
 python detect.py \
 --weights $weights \
