@@ -1,4 +1,6 @@
 scene_class/config.yaml
+scene_class/lightning_logs
+scene_class/logs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
