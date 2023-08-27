@@ -75,7 +75,8 @@ def main(config):
     log_path = os.path.join(os.getcwd(), 'logs')
     logger = TensorBoardLogger(log_path)
     checkpoint = lit.callbacks.ModelCheckpoint(dirpath=log_path,
-                                               filename='best_model',
+                                               save_top_k=1,
+                                               save_on_train_epoch_end=True,
                                                monitor="val_loss")
 
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=5000, patience=200, verbose=False, mode="min")
