@@ -15,10 +15,16 @@ import pytorch_lightning as lit
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
-
+from lightning.pytorch.callbacks import TQDMProgressBar
 
 from dataset import Dataset
 from model_lit import LitClassifier
+
+class NoValidationProgressBar(TQDMProgressBar):
+    def init_validation_tqdm(self):
+        bar = super().init_validation_tqdm()
+        bar.disable = True
+        return bar
 
 
 def main(config):
@@ -73,7 +79,7 @@ def main(config):
                                                monitor="val_loss")
 
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=5000, patience=200, verbose=False, mode="min")
-    callbacks = [early_stop_callback, checkpoint]
+    callbacks = [early_stop_callback, checkpoint, NoValidationProgressBar()]
 
     # Model
     model = LitClassifier(config=config)

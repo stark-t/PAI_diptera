@@ -63,7 +63,7 @@ def run_predict(config):
 
     model = LitClassifier(config=config)
 
-    checkpoint = torch.load("/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/best_model-v1.ckpt")
+    checkpoint = torch.load("/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/best_model.ckpt")
     model.load_state_dict(checkpoint["state_dict"])
 
     trainer = lit.Trainer(
