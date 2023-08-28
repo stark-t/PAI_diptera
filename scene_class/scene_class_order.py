@@ -15,16 +15,12 @@ import pytorch_lightning as lit
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
-from lightning.pytorch.callbacks import TQDMProgressBar
+from pytorch_lightning.callbacks import TQDMProgressBar
 
 from dataset import Dataset
 from model_lit import LitClassifier
 
-class NoValidationProgressBar(TQDMProgressBar):
-    def init_validation_tqdm(self):
-        bar = super().init_validation_tqdm()
-        bar.disable = True
-        return bar
+
 
 
 def main(config):
@@ -72,12 +68,23 @@ def main(config):
         test_set, batch_size=8, num_workers=n_cpu)
 
     # Logger and Callbacks
+
+    class NoValidationProgressBar(TQDMProgressBar):
+        def init_validation_tqdm(self):
+            bar = super().init_validation_tqdm()
+            bar.disable = True
+            return bar
+
     log_path = os.path.join(os.getcwd(), 'logs')
     logger = TensorBoardLogger(log_path)
-    checkpoint = lit.callbacks.ModelCheckpoint(dirpath=log_path,
+    checkpoint = lit.callbacks.ModelCheckpoint(
                                                save_top_k=1,
+                                               every_n_epochs=None,
+                                               every_n_train_steps=None,
+                                               train_time_interval=None,
                                                save_on_train_epoch_end=True,
-                                               monitor="val_loss")
+                                               monitor="val_loss",
+                                               mode='min')
 
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=5000, patience=200, verbose=False, mode="min")
     callbacks = [early_stop_callback, checkpoint, NoValidationProgressBar()]
