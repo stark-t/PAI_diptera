@@ -63,7 +63,7 @@ def run_predict(config):
 
     model = LitClassifier(config=config)
 
-    checkpoint = torch.load("/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/best_model.ckpt")
+    checkpoint = torch.load("/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/lightning_logs/lightning_logs/version_0/checkpoints/epoch=13-step=33810.ckpt")
     model.load_state_dict(checkpoint["state_dict"])
 
     trainer = lit.Trainer(
@@ -97,7 +97,8 @@ def run_predict(config):
     acc_balanced = balanced_accuracy_score(labels_class, preds_class)
     # acc_top3 = top_k_accuracy_score(labels_class, preds_arr, k=3)
     acc_kappa = cohen_kappa_score(labels_class, preds_class)
-
+    print("Overall Accuracy:  {:.2f}".format(acc_balanced*100))
+    print("Kappa:  {:.2f}".format(acc_kappa*100))
     # if there are more labels than prediction classes fix this
     if len(np.unique(preds_class)) != len(np.unique(labels_class)):
         preds_class.extend(label_int)
@@ -105,8 +106,6 @@ def run_predict(config):
 
     # get confusion matrix
     cm_pd = cm_analysis(labels_class, preds_class, labels=label_int, plot=True)
-
-
 
     d=1
 

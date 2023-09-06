@@ -20,10 +20,12 @@ from pytorch_lightning.callbacks import TQDMProgressBar
 from dataset import Dataset
 from model_lit import LitClassifier
 
+import sys
+from datetime import datetime
 
 
 
-def main(config):
+def main(config, log_itmes):
     seed_everything(42, workers=True)
 
     all_files = list(iglob(config['paths']['data_path'] + os.sep + '*.jpeg'))
@@ -75,8 +77,11 @@ def main(config):
             bar.disable = True
             return bar
 
-    log_path = os.path.join(os.getcwd(), 'logs')
-    logger = TensorBoardLogger(log_path)
+
+    logger = TensorBoardLogger(save_dir=os.path.join(os.getcwd(), 'logs'),
+                                                     name=log_items[0],
+                                                     version=log_items[1])
+
     checkpoint = lit.callbacks.ModelCheckpoint(
                                                save_top_k=1,
                                                every_n_epochs=None,
@@ -86,7 +91,7 @@ def main(config):
                                                monitor="val_loss",
                                                mode='min')
 
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=5000, patience=200, verbose=False, mode="min")
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0, patience=config['parameters']['epochs'], verbose=True, mode="min")
     callbacks = [early_stop_callback, checkpoint, NoValidationProgressBar()]
 
     # Model
@@ -115,4 +120,14 @@ if __name__ == '__main__':
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
-    main(config)
+    log_name = config['parameters']['model']
+    log_time = datetime.now()
+    log_version = log_time.strftime('%y%m%d%H')
+    log_items = [log_name, log_version]
+    if not os.path.isdir(os.path.join(os.getcwd(), 'logs', log_name, log_version)):
+        os.makedirs(os.path.join(os.getcwd(), 'logs', log_name, log_version))
+    sys.stdout = open(os.path.join(os.getcwd(), 'logs', log_name, log_version, 'log_console.txt'), 'w')
+
+    main(config, log_items)
+
+    sys.stdout.close()

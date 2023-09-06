@@ -6,16 +6,15 @@ paths:
     results_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # !!! Under results_path must be a folder named "models" and "predictions"
     images_stats_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_stats.csv"
 parameters:
-    model: resnet18  # stnet
+    model: efficientnet_b3  # resnet18  # stnet
     bit_depth: 8
     epochs: 100
     image_size: 640 # only select image sizes devisible by 32
     learningrate: 0.001
-    learningrate_sheduler: 'CosineAnnealingWarmRestarts'  # 'cosine'
-    model: resnet18
+    learningrate_sheduler: 'CosineAnnealingWarmRestarts' #'CosineAnnealingWarmRestarts'  # 'cosine'
     normalization: simple
     num_classes: 8
-    optimizer: 'adamw'
+    optimizer: 'adam'
     verbose: 0 # verbose 0,1,2 or 3
     plot_trainvalpredictions: False
     seed: 99

@@ -23,6 +23,10 @@ class LitClassifier(lit.LightningModule):
             self.model = timm.create_model('resnet18', pretrained=False)
             in_features = self.model.fc.in_features
             self.model.fc = nn.Linear(in_features, self.NUM_CLASSES)
+
+        elif self.config['parameters']['model'] == 'efficientnet_b3':
+            self.model = timm.create_model('efficientnet_b3', pretrained=False, num_classes=self.NUM_CLASSES)
+
     def training_step(self, batch, batch_idx):
         x, y = batch
         y_pred = self.model(x)
@@ -30,7 +34,7 @@ class LitClassifier(lit.LightningModule):
         loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
         train_loss = loss_fn(y_pred, y)
 
-        self.log("train_loss", train_loss, on_step=True, prog_bar=False)
+        self.log("train_loss", train_loss, on_step=True, prog_bar=True)
         return train_loss
 
     def validation_step(self, batch, batch_idx):
@@ -40,7 +44,7 @@ class LitClassifier(lit.LightningModule):
         loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
         val_loss = loss_fn(y_pred, y)
 
-        self.log("val_loss", val_loss, on_step=True, prog_bar=False)
+        self.log("val_loss", val_loss, on_step=True, prog_bar=True)
         return val_loss
 
     def test_step(self, batch, batch_idx):
