@@ -14,12 +14,27 @@ import pytorch_lightning as lit
 
 from dataset import Dataset
 from model_lit import LitClassifier
+from utils_get_console_output import get_console_output
 
 from confusion_matrix import cm_analysis
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score, top_k_accuracy_score, cohen_kappa_score
+from shutil import rmtree
 
-def run_predict(config):
+def convert_seconds_to_hh_mm_ss(seconds):
+    hours, remainder = divmod(int(seconds), 3600)  # 3600 seconds in an hour
+    minutes, seconds = divmod(remainder, 60)  # 60 seconds in a minute
+    return hours, minutes, seconds
+
+
+
+def get_nth_directory_from_end(path, n):
+    # Split the path into its components and reverse the list
+    components = path.split(os.path.sep)[:-n]
+    return os.sep + os.path.join(*components)
+
+
+def run_predict(config, ckpt='checkpoint_path'):
     # Your code goes here
     seed_everything(42, workers=True)
 
@@ -63,7 +78,7 @@ def run_predict(config):
 
     model = LitClassifier(config=config)
 
-    checkpoint = torch.load("/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/lightning_logs/lightning_logs/version_0/checkpoints/epoch=13-step=33810.ckpt")
+    checkpoint = torch.load(ckpt)
     model.load_state_dict(checkpoint["state_dict"])
 
     trainer = lit.Trainer(
@@ -118,4 +133,28 @@ if __name__ == "__main__":
 
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
-    run_predict(config)
+
+
+    # checkpoint_path
+    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/' \
+                      'efficientnet_b3/23090617/checkpoints/epoch=13-step=33810.ckpt'
+
+    # get mean step time and train val loss
+    log_console_path = get_nth_directory_from_end(checkpoint_path, 2)
+    log_console_path = os.path.join(log_console_path, 'log_console.txt')
+    secondsperepoch, train_loss, val_loss = get_console_output(log_console_path=log_console_path)
+
+    # get predictions
+    run_predict(config, ckpt=checkpoint_path)
+
+    # remove lightninglogdir
+    lighntinglogdir = os.path.join(os.getcwd(), 'lightning_logs')
+    rmtree(lighntinglogdir)
+
+    # print time
+    epochs = int(checkpoint_path.split('epoch=')[-1].split('-step')[0])
+    total_seconds = secondsperepoch * epochs
+
+    hours, minutes, seconds = convert_seconds_to_hh_mm_ss(total_seconds)
+    print('{}-Epcohs took:'.format(epochs))
+    print(f"{hours:02d}:{minutes:02d}:{seconds:02d}")

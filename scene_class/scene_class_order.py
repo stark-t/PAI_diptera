@@ -5,7 +5,8 @@ import pandas as pd
 import yaml
 from glob import iglob
 from sklearn.model_selection import train_test_split
-# import glob
+import sys
+from datetime import datetime
 
 import torch
 from pytorch_lightning import seed_everything
@@ -19,11 +20,6 @@ from pytorch_lightning.callbacks import TQDMProgressBar
 
 from dataset import Dataset
 from model_lit import LitClassifier
-
-import sys
-from datetime import datetime
-
-
 
 def main(config, log_itmes):
     seed_everything(42, workers=True)
@@ -62,12 +58,13 @@ def main(config, log_itmes):
 
     # Initialize DataLoader
     n_cpu = os.cpu_count()
+    batch_size = 8
     train_loader = DataLoader(
-        train_set, batch_size=8, num_workers=n_cpu, shuffle=True)
+        train_set, batch_size=batch_size, num_workers=n_cpu, shuffle=True)
     val_loader = DataLoader(
-        val_set, batch_size=8, num_workers=n_cpu)
+        val_set, batch_size=batch_size, num_workers=n_cpu)
     test_loader = DataLoader(
-        test_set, batch_size=8, num_workers=n_cpu)
+        test_set, batch_size=batch_size, num_workers=n_cpu)
 
     # Logger and Callbacks
 
@@ -76,7 +73,7 @@ def main(config, log_itmes):
             bar = super().init_validation_tqdm()
             bar.disable = True
             return bar
-
+    tqdm_refreshrate = int((len(train_set)/batch_size)/5)
 
     logger = TensorBoardLogger(save_dir=os.path.join(os.getcwd(), 'logs'),
                                                      name=log_items[0],
@@ -91,8 +88,8 @@ def main(config, log_itmes):
                                                monitor="val_loss",
                                                mode='min')
 
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0, patience=config['parameters']['epochs'], verbose=True, mode="min")
-    callbacks = [early_stop_callback, checkpoint, NoValidationProgressBar()]
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0, patience=config['parameters']['epochs']/2, verbose=True, mode="min")
+    callbacks = [early_stop_callback, checkpoint, TQDMProgressBar(refresh_rate=tqdm_refreshrate)]
 
     # Model
     model = LitClassifier(config=config)
@@ -120,14 +117,20 @@ if __name__ == '__main__':
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
+    # create log info
     log_name = config['parameters']['model']
     log_time = datetime.now()
     log_version = log_time.strftime('%y%m%d%H')
     log_items = [log_name, log_version]
     if not os.path.isdir(os.path.join(os.getcwd(), 'logs', log_name, log_version)):
         os.makedirs(os.path.join(os.getcwd(), 'logs', log_name, log_version))
+
+    # create log file
     sys.stdout = open(os.path.join(os.getcwd(), 'logs', log_name, log_version, 'log_console.txt'), 'w')
 
+    # run training
     main(config, log_items)
 
+    # close log file
     sys.stdout.close()
+

@@ -34,7 +34,7 @@ class LitClassifier(lit.LightningModule):
         loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
         train_loss = loss_fn(y_pred, y)
 
-        self.log("train_loss", train_loss, on_step=True, prog_bar=True)
+        self.log("train_loss", train_loss, on_step=False, on_epoch=True, prog_bar=True)
         return train_loss
 
     def validation_step(self, batch, batch_idx):
@@ -44,7 +44,7 @@ class LitClassifier(lit.LightningModule):
         loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
         val_loss = loss_fn(y_pred, y)
 
-        self.log("val_loss", val_loss, on_step=True, prog_bar=True)
+        self.log("val_loss", val_loss, on_step=False, on_epoch=True, prog_bar=True)
         return val_loss
 
     def test_step(self, batch, batch_idx):
