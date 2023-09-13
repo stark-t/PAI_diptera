@@ -21,6 +21,8 @@ from pytorch_lightning.callbacks import TQDMProgressBar
 from dataset import Dataset
 from model_lit import LitClassifier
 
+torch.set_float32_matmul_precision('medium')
+
 def main(config, log_itmes):
     seed_everything(42, workers=True)
 
@@ -45,7 +47,7 @@ def main(config, log_itmes):
     val_set = Dataset(path=df_val['file_path'].tolist(), config=config, norm=config['parameters']['normalization'])
     test_set = Dataset(path=df_test['file_path'].tolist(), config=config, norm=config['parameters']['normalization'])
 
-    if config['parameters']['verbose'] > 1:
+    if config['parameters']['verbose'] >= 1:
         grouped_df = df_train.groupby("family").nunique()
         print(grouped_df)
         randints = torch.randint(low=0, high=len(train_set), size=(10,))
@@ -58,7 +60,7 @@ def main(config, log_itmes):
 
     # Initialize DataLoader
     n_cpu = os.cpu_count()
-    batch_size = 8
+    batch_size = config['parameters']['batch_size']
     train_loader = DataLoader(
         train_set, batch_size=batch_size, num_workers=n_cpu, shuffle=True)
     val_loader = DataLoader(

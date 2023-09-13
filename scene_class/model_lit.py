@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import timm
 import pytorch_lightning as lit
+import torch.nn.functional as F
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, ReduceLROnPlateau
 
 import STnet_CNN
@@ -12,24 +13,33 @@ class LitClassifier(lit.LightningModule):
         super().__init__()
         self.config = config
         self.learningrate = config['parameters']['learningrate']
-        self.NUM_CLASSES = len([entry.name.lower() for entry in
-                                  os.scandir(self.config['paths']['original_data_path'])
-                                  if entry.is_dir()])
+        self.NUM_CLASSES = config['parameters']['num_classes']
 
-        if self.config['parameters']['model'] == 'STnet':
-            self.model = STnet_CNN.STnet(input_channel=3, num_classes=self.NUM_CLASSES)
+        listmodels = timm.list_models(config['parameters']['model'])
+        if len(listmodels) > 1:
+            print("Use specific timm model")
+            print("Models selected:")
+            print(listmodels)
+            print(1/0)
 
-        elif self.config['parameters']['model'] == 'resnet18':
-            self.model = timm.create_model('resnet18', pretrained=False)
-            in_features = self.model.fc.in_features
-            self.model.fc = nn.Linear(in_features, self.NUM_CLASSES)
+        timm_model = listmodels[0]
 
-        elif self.config['parameters']['model'] == 'efficientnet_b3':
-            self.model = timm.create_model('efficientnet_b3', pretrained=False, num_classes=self.NUM_CLASSES)
+        # Load the pretrained model from Timm with the specified name
+        self.feature_extractor = timm.create_model(timm_model, pretrained=config["parameters"]["pretrained"],
+                                                   num_classes=0, global_pool='')
+
+        # Determine the input size for the classifier dynamically
+        num_features = self.feature_extractor.num_features
+
+        # Add a dropout layer
+        self.dropout = nn.Dropout(p=config["parameters"]["dropout"])
+
+        # Add a linear layer for classification
+        self.classifier = nn.Linear(num_features, config["parameters"]["num_classes"])
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y_pred = self.model(x)
+        y_pred = self(x)
 
         loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
         train_loss = loss_fn(y_pred, y)
@@ -39,7 +49,8 @@ class LitClassifier(lit.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        y_pred = self.model(x)
+        # y_pred = self(x)
+        y_pred = self(x)
 
         loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=0.1)
         val_loss = loss_fn(y_pred, y)
@@ -49,7 +60,7 @@ class LitClassifier(lit.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, y = batch
-        y_pred = self.model(x)
+        y_pred = self(x)
 
         test_loss = torch.nn.functional.cross_entropy(y_pred, y, label_smoothing=0.1)
         self.log('test_loss', test_loss)
@@ -57,11 +68,11 @@ class LitClassifier(lit.LightningModule):
 
     def configure_optimizers(self):
         if self.config['parameters']['optimizer'] == 'adam':
-            optimizer = torch.optim.Adam(self.model.parameters(),
+            optimizer = torch.optim.Adam(self.parameters(),
                                          lr=float(self.learningrate))
 
         elif self.config['parameters']['optimizer'] == 'adamw':
-            optimizer = torch.optim.AdamW(self.model.parameters(),
+            optimizer = torch.optim.AdamW(self.parameters(),
                                           lr=float(self.learningrate),
                                           weight_decay=1e-3)
 
@@ -82,8 +93,11 @@ class LitClassifier(lit.LightningModule):
         y_hat = self(x)
         return y_hat
 
-    # def forward(self, batch, batch_idx):
     def forward(self, x):
-        # x, y = batch
-        y_pred = self.model(x)
-        return y_pred, x
+        # Forward pass through the network
+        features = self.feature_extractor(x)
+        features = F.adaptive_avg_pool2d(features, (1, 1))  # Global average pooling
+        features = features.view(features.size(0), -1)  # Flatten
+        features = self.dropout(features)
+        logits = self.classifier(features)
+        return logits

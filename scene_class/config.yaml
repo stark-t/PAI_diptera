@@ -7,13 +7,16 @@ paths:
     images_stats_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_stats.csv"
 parameters:
     model: resnet18  # efficientnet_b3  #   # stnet
+    pretrained: False
+    dropout: 0.2
     bit_depth: 8
     epochs: 100
     image_size: 640 # only select image sizes devisible by 32
     learningrate: 0.001
     learningrate_sheduler: 'CosineAnnealingWarmRestarts' #'CosineAnnealingWarmRestarts'  # 'cosine'
     normalization: simple
-    num_classes: 8
+    num_classes: 12
+    batch_size: 8
     optimizer: 'adam'
     verbose: 0 # verbose 0,1,2 or 3
     plot_trainvalpredictions: False
