@@ -20,4 +20,4 @@ parameters:
     optimizer: 'adam'
     verbose: 0 # verbose 0,1,2 or 3
     plot_trainvalpredictions: False
-    seed: 99
+    seed: 42

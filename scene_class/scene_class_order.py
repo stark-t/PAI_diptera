@@ -7,6 +7,7 @@ from glob import iglob
 from sklearn.model_selection import train_test_split
 import sys
 from datetime import datetime
+import warnings
 
 import torch
 from pytorch_lightning import seed_everything
@@ -24,7 +25,7 @@ from model_lit import LitClassifier
 torch.set_float32_matmul_precision('medium')
 
 def main(config, log_itmes):
-    seed_everything(42, workers=True)
+    seed_everything(config['parameters']['seed'], workers=True)
 
     all_files = list(iglob(config['paths']['data_path'] + os.sep + '*.jpeg'))
     file_df = pd.DataFrame({'file_path': all_files})
@@ -95,6 +96,9 @@ def main(config, log_itmes):
 
     # Model
     model = LitClassifier(config=config)
+
+    warnings.warn("Start training")
+    warnings.warn("Print loggings can be found in log-file only")
 
     # Trainer
     trainer = lit.Trainer(
