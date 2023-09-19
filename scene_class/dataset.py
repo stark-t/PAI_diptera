@@ -27,17 +27,22 @@ class Dataset(TorchDataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
+
         # get image stats
-        stats = pd.read_csv(self.config["paths"]["images_stats_path"])
-        if stats is None:
-            t=1/0
-        else:
+        if self.config['parameters']['normalization'] == 'znorm':
+            stats = pd.read_csv(self.config["paths"]["images_stats_path"])
             img_means = get_stats(stats['Mean'].to_list())
             img_stds = get_stats(stats['Std'].to_list())
+
         # read image
         image = cv2.imread(self.file_paths[idx])
         image = cv2.resize(image, (self.config["parameters"]["image_size"], self.config["parameters"]["image_size"]))
-        image = normalize(image, img_means, img_stds)
+        if self.config['parameters']['normalization'] == 'znorm':
+            image = normalize(image, img_means, img_stds)
+        elif self.config['parameters']['normalization'] == 'imagenet':
+            image = normalize_imagenet(image)
+        else:
+            image = normalize_simple(image)
 
         # get label
         label_family = self.file_paths[idx].split('/')[-1].split('_')[0].lower()
@@ -49,7 +54,7 @@ class Dataset(TorchDataset):
         label = np.array(label)
         label_tensor = torch.from_numpy(label).to(torch.long)
 
-        return torch.tensor(image.transpose(2, 0, 1)), label_tensor
+        return torch.FloatTensor(image.transpose(2, 0, 1)), label_tensor
 
 def get_stats(stats_list):
     stats = stats_list[0].strip("()")
@@ -64,4 +69,17 @@ def normalize(arr: np.array, means: np.ndarray, stds: np.ndarray) -> np.array:
     arr = arr / 255.0
     return arr
 
+def normalize_simple(arr: np.array) -> np.array:
+    """simple normalization a 3D array with 1D statistics."""
+    arr = arr / 255.0
+    return arr
+
+def normalize_imagenet(arr: np.array) -> np.array:
+    """imagenet stats normalization a 3D array with 1D statistics."""
+    means = [0.485, 0.456, 0.406]
+    stds = [0.229, 0.224, 0.225]
+    arr = arr / 255.0
+    arr = arr - means
+    arr = arr / stds
+    return arr
 

@@ -97,16 +97,14 @@ def run_predict(config, ckpt='checkpoint_path'):
     # Step 3: Perform argmax to get class predictions for each item
     preds_class = np.argmax(preds_array, axis=1)
 
-
-
+    # Get label names
     labels_family = df_test['family'].tolist()
-    # # Get unique sorted names from the family_list
-    # # Create a dictionary to map names to their sorted positions
+    # Get unique sorted names from the family_list
+    # Create a dictionary to map names to their sorted positions
     name_to_position = {name: i for i, name in enumerate(label_familynames_sorted)}
     # # Create the class_int list by mapping names to their positions
     labels_class = [name_to_position[name.lower()] for name in labels_family]
-    # missing_classes = set(labels_class + preds_class)
-    # print("Missing the following classe(s):  {}".format(missing_classes))
+
     # calculate accuracy metrics
     acc_balanced = balanced_accuracy_score(labels_class, preds_class)
     # acc_top3 = top_k_accuracy_score(labels_class, preds_arr, k=3)
@@ -135,7 +133,7 @@ if __name__ == "__main__":
 
 
     # checkpoint_path
-    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/resnet18/23091313/checkpoints/epoch=85-step=415294.ckpt'
+    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/resnet18/23091809/checkpoints/epoch=15-step=38640.ckpt'
 
     # get mean step time and train val loss
     log_console_path = get_nth_directory_from_end(checkpoint_path, 2)

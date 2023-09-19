@@ -103,7 +103,6 @@ def main(config, log_itmes):
     # Trainer
     trainer = lit.Trainer(
         accelerator="gpu",
-        precision=16,
         max_epochs=config['parameters']['epochs'],
         devices=torch.cuda.device_count(),
         logger=logger,
