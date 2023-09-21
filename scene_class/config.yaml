@@ -15,9 +15,9 @@ parameters:
     learningrate: 0.001
     learningrate_sheduler: 'CosineAnnealingWarmRestarts' #'CosineAnnealingWarmRestarts'  # 'cosine'
     normalization: imagenet  # znorm
-    num_classes: 12
+    num_classes: 15
     batch_size: 8
     optimizer: 'adam'
-    verbose: 0 # verbose 0,1,2 or 3
+    verbose: 2 # verbose 0,1,2 or 3
     plot_trainvalpredictions: False
     seed: 42
