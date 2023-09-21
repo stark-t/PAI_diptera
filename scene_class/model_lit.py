@@ -1,12 +1,48 @@
 import os
+import numpy as np
 import torch
 import torch.nn as nn
+import torchvision
 import timm
 import pytorch_lightning as lit
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, ReduceLROnPlateau
+from kornia import image_to_tensor, tensor_to_image
+from kornia.augmentation import ColorJitter, RandomChannelShuffle, RandomHorizontalFlip, RandomThinPlateSpline
+from torch import Tensor
+import matplotlib.pyplot as plt
 
-import STnet_CNN
+class DataAugmentation(nn.Module):
+    """Module to perform data augmentation using Kornia on torch tensors."""
+
+    def __init__(self, apply_color_jitter: bool = False) -> None:
+        super().__init__()
+        self._apply_color_jitter = apply_color_jitter
+
+        self.transforms = nn.Sequential(
+            RandomHorizontalFlip(p=0.75),
+            RandomChannelShuffle(p=0.75),
+            RandomThinPlateSpline(p=0.75),
+        )
+
+        self.jitter = ColorJitter(0.5, 0.5, 0.5, 0.5)
+
+    @torch.no_grad()  # disable gradients for effiency
+    def forward(self, x: Tensor) -> Tensor:
+        x_out = self.transforms(x)  # BxCxHxW
+        if self._apply_color_jitter:
+            x_out = self.jitter(x_out)
+        return x_out
+
+# class Preprocess(nn.Module):
+#     """Module to perform pre-process using Kornia on torch tensors."""
+#
+#     @torch.no_grad()  # disable gradients for effiency
+#     def forward(self, x) -> Tensor:
+#         x_tmp: np.ndarray = np.array(x)  # HxWxC
+#         x_out: Tensor = image_to_tensor(x_tmp, keepdim=True)  # CxHxW
+#         return x_out.float() / 255.0
+
 
 class LitClassifier(lit.LightningModule):
     def __init__(self, config='pathtoconfig'):
@@ -14,6 +50,8 @@ class LitClassifier(lit.LightningModule):
         self.config = config
         self.learningrate = config['parameters']['learningrate']
         self.NUM_CLASSES = config['parameters']['num_classes']
+        # self.preprocess = Preprocess()  # per sample transforms
+        self.transform = DataAugmentation()  # per batch augmentation_kornia
 
         listmodels = timm.list_models(config['parameters']['model'])
         if len(listmodels) > 1:
@@ -36,6 +74,26 @@ class LitClassifier(lit.LightningModule):
 
         # Add a linear layer for classification
         self.classifier = nn.Linear(num_features, config["parameters"]["num_classes"])
+
+    def show_batch(self, win_size=(10, 10)):
+        def _to_vis(data):
+            return tensor_to_image(torchvision.utils.make_grid(data, nrow=8))
+
+        # get a batch from the training set: try with `val_datlaoader` :)
+        imgs, labels = next(iter(self.train_dataloader()))
+        imgs_aug = self.transform(imgs)  # apply transforms
+        # use matplotlib to visualize
+        plt.figure(figsize=win_size)
+        plt.imshow(_to_vis(imgs))
+        plt.figure(figsize=win_size)
+        plt.imshow(_to_vis(imgs_aug))
+
+    def on_after_batch_transfer(self, batch, batch_idx):
+        x, y = batch
+        if self.trainer.training:
+            x = self.transform(x)  # => we perform GPU/Batched data augmentation
+        return x, y
+
 
     def training_step(self, batch, batch_idx):
         x, y = batch
