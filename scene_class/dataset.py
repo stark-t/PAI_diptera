@@ -36,7 +36,9 @@ class Dataset(TorchDataset):
 
         # read image
         image = cv2.imread(self.file_paths[idx])
-        image = cv2.resize(image, (self.config["parameters"]["image_size"], self.config["parameters"]["image_size"]))
+        image = pad_to_imgsize(image, self.config["parameters"]["image_size"])
+        # image = cv2.resize(image, (self.config["parameters"]["image_size"], self.config["parameters"]["image_size"]))
+
         if self.config['parameters']['normalization'] == 'znorm':
             image = normalize(image, img_means, img_stds)
         elif self.config['parameters']['normalization'] == 'imagenet':
@@ -83,3 +85,28 @@ def normalize_imagenet(arr: np.array) -> np.array:
     arr = arr / stds
     return arr
 
+def pad_to_imgsize(original_image, new_size):
+    # Get the original image dimensions
+    height, width, channels = original_image.shape
+
+    # Calculate the scaling factor to fit within a 640x640 frame while maintaining aspect ratio
+    scale_factor = min(new_size / width, new_size / height)
+
+    # Calculate the new dimensions
+    new_width = int(width * scale_factor)
+    new_height = int(height * scale_factor)
+
+    # Resize the image while maintaining aspect ratio
+    resized_image = cv2.resize(original_image, (new_width, new_height))
+
+    # Create a blank black image with a 640x640 size
+    canvas = np.zeros((new_size, new_size, channels), dtype=np.uint8)
+
+    # Calculate the position to paste the resized image with zero padding
+    x_offset = (640 - new_width) // 2
+    y_offset = (640 - new_height) // 2
+
+    # Paste the resized image onto the blank canvas with zero padding
+    canvas[y_offset:y_offset + new_height, x_offset:x_offset + new_width] = resized_image
+
+    return canvas
