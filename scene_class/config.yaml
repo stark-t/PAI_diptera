@@ -1,8 +1,11 @@
 paths:
-    data_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_data_filtered"
-    model_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # depends on parameters below
+    base_path:          "/mnt/ushelf_star_th/data/PAI_diptera"
+    data_path:          "/mnt/ushelf_star_th/data/PAI_diptera/image_data_filtered"
     original_data_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_data"
-    prediction_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # depends on parameters below
+    prediction_path:    "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # depends on parameters below
+    model_path:         "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # depends on parameters below
+
+
     results_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # !!! Under results_path must be a folder named "models" and "predictions"
     images_stats_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_stats.csv"
 parameters:
@@ -18,6 +21,6 @@ parameters:
     num_classes: 15
     batch_size: 8
     optimizer: 'adam'
-    verbose: 2 # verbose 0,1,2 or 3
-    plot_trainvalpredictions: False
+    verbose: 0 # verbose 0,1,2 or 3
+    save_inference_images: True
     seed: 42
