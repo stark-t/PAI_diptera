@@ -49,7 +49,7 @@ def cm_analysis(y_true, y_pred, labels, ymap=None, figsize=(7,7), filename=None,
 
     cm_pd = pd.DataFrame(cm_perc, index=labels, columns=labels)
     fig, ax = plt.subplots(figsize=figsize)
-    sns.heatmap(cm_pd, annot=annot, fmt='', ax=ax, cmap='Blues', square=True)
+    sns.heatmap(cm_pd, annot=annot, fmt='', ax=ax, cmap='Blues', square=True, annot_kws={"size": 8})
     ax.set_xlabel('\nPredicted')
     ax.set_ylabel('Actual\n')
     ax.figure.tight_layout()

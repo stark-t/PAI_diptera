@@ -40,7 +40,7 @@ def run_predict(config, ckpt='checkpoint_path'):
     label_familynames = [entry.name.lower() for entry in os.scandir(config['paths']['original_data_path']) if
                   entry.is_dir()]
     label_familynames_sorted = sorted(label_familynames)
-    label_familynames_sorted = label_familynames_sorted[:-3]
+    # label_familynames_sorted = label_familynames_sorted[:-3]
     label_int = list(range(len(label_familynames_sorted)))
 
     all_files = list(iglob(config['paths']['data_path'] + os.sep + '*.jpeg'))
@@ -102,7 +102,7 @@ def run_predict(config, ckpt='checkpoint_path'):
     # Get unique sorted names from the family_list
     # Create a dictionary to map names to their sorted positions
     name_to_position = {name: i for i, name in enumerate(label_familynames_sorted)}
-    # # Create the class_int list by mapping names to their positions
+    # Create the class_int list by mapping names to their positions
     labels_class = [name_to_position[name.lower()] for name in labels_family]
 
     # calculate accuracy metrics
@@ -117,7 +117,18 @@ def run_predict(config, ckpt='checkpoint_path'):
         labels_class.extend(label_int)
 
     # get confusion matrix
-    cm_pd = cm_analysis(labels_class, preds_class, labels=label_int, plot=True)
+    label_plot_name = [name[:3].capitalize() for name in label_familynames_sorted]
+    cm_pd = cm_analysis(labels_class, preds_class, labels=label_plot_name, plot=True)
+
+    # save_inference_images
+    # if config['parameters']['save_inference_images']:
+    #     for i, prediction in enumerate(preds_class):
+    #         label = labels_class[i]
+    #         image_path = df_test['file_path'].iloc[i]
+    #
+    #         file_name = os.path.join()
+    #         d=1
+
 
     d=1
 
@@ -133,7 +144,7 @@ if __name__ == "__main__":
 
 
     # checkpoint_path
-    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/resnet18/23091913/checkpoints/epoch=95-step=231840.ckpt'
+    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/resnet18/23092817/checkpoints/epoch=87-step=193160.ckpt'
 
     # get mean step time and train val loss
     log_console_path = get_nth_directory_from_end(checkpoint_path, 2)

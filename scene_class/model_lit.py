@@ -15,33 +15,40 @@ import matplotlib.pyplot as plt
 class DataAugmentation(nn.Module):
     """Module to perform data augmentation using Kornia on torch tensors."""
 
-    def __init__(self, apply_color_jitter: bool = False) -> None:
+    def __init__(self, apply_augs_basic: bool = True,
+                 apply_augs_color: bool = False,
+                 apply_augs_geom: bool = False,) -> None:
         super().__init__()
-        self._apply_color_jitter = apply_color_jitter
+        self._apply_augs_basic = apply_augs_basic
+        self._apply_augs_color = apply_augs_color
+        self._apply_augs_geom = apply_augs_geom
 
-        self.transforms = nn.Sequential(
+        self.augs_basic = nn.Sequential(
             RandomHorizontalFlip(p=0.75),
+        )
+
+        self.augs_color = nn.Sequential(
+            ColorJitter(0.5, 0.5, 0.5, 0.5, p=0.75),
             RandomChannelShuffle(p=0.75),
+            RandomHorizontalFlip(p=0.75),
             RandomThinPlateSpline(p=0.75),
         )
 
-        self.jitter = ColorJitter(0.5, 0.5, 0.5, 0.5)
+        self.augs_geom = nn.Sequential(
+            RandomThinPlateSpline(p=0.75),
+        )
 
     @torch.no_grad()  # disable gradients for effiency
     def forward(self, x: Tensor) -> Tensor:
-        x_out = self.transforms(x)  # BxCxHxW
-        if self._apply_color_jitter:
-            x_out = self.jitter(x_out)
-        return x_out
+        # BxCxHxW
+        if self._apply_augs_basic:
+            x = self.augs_basic(x)
+        if self._apply_augs_color:
+            x = self.augs_color(x)
+        if self._apply_augs_geom:
+            x = self.augs_geom(x)
 
-# class Preprocess(nn.Module):
-#     """Module to perform pre-process using Kornia on torch tensors."""
-#
-#     @torch.no_grad()  # disable gradients for effiency
-#     def forward(self, x) -> Tensor:
-#         x_tmp: np.ndarray = np.array(x)  # HxWxC
-#         x_out: Tensor = image_to_tensor(x_tmp, keepdim=True)  # CxHxW
-#         return x_out.float() / 255.0
+        return x
 
 
 class LitClassifier(lit.LightningModule):
@@ -50,8 +57,7 @@ class LitClassifier(lit.LightningModule):
         self.config = config
         self.learningrate = config['parameters']['learningrate']
         self.NUM_CLASSES = config['parameters']['num_classes']
-        # self.preprocess = Preprocess()  # per sample transforms
-        self.transform = DataAugmentation()  # per batch augmentation_kornia
+        self.transform = DataAugmentation(apply_augs_basic=True, apply_augs_color=True, apply_augs_geom=True)  # per batch augmentation_kornia
 
         listmodels = timm.list_models(config['parameters']['model'])
         if len(listmodels) > 1:
@@ -81,7 +87,7 @@ class LitClassifier(lit.LightningModule):
 
         # get a batch from the training set: try with `val_datlaoader` :)
         imgs, labels = next(iter(self.train_dataloader()))
-        imgs_aug = self.transform(imgs)  # apply transforms
+        imgs_aug = self.transform(imgs)  # apply augmentations
         # use matplotlib to visualize
         plt.figure(figsize=win_size)
         plt.imshow(_to_vis(imgs))
