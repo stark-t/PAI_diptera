@@ -91,11 +91,13 @@ def main(config, log_itmes):
                                                monitor="val_loss",
                                                mode='min')
 
-    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0, patience=config['parameters']['epochs']/2, verbose=True, mode="min")
+    early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=0.01, patience=config['parameters']['epochs']/3, verbose=True, mode="min")
     callbacks = [early_stop_callback, checkpoint, TQDMProgressBar(refresh_rate=tqdm_refreshrate)]
 
     # Model
     model = LitClassifier(config=config)
+
+
 
     warnings.warn("Start training")
     warnings.warn("Print loggings can be found in log-file only")

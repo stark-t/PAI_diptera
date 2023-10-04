@@ -8,7 +8,8 @@ import pytorch_lightning as lit
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, ReduceLROnPlateau
 from kornia import image_to_tensor, tensor_to_image
-from kornia.augmentation import ColorJitter, RandomChannelShuffle, RandomHorizontalFlip, RandomThinPlateSpline
+# from kornia.augmentation import ColorJitter, RandomChannelShuffle, RandomHorizontalFlip, RandomThinPlateSpline, RandomRotation
+import kornia.augmentation as augmentations
 from torch import Tensor
 import matplotlib.pyplot as plt
 
@@ -17,37 +18,53 @@ class DataAugmentation(nn.Module):
 
     def __init__(self, apply_augs_basic: bool = True,
                  apply_augs_color: bool = False,
-                 apply_augs_geom: bool = False,) -> None:
+                 apply_augs_geom: bool = False,
+                 apply_augs_mix: bool = False,
+                 ) -> None:
         super().__init__()
         self._apply_augs_basic = apply_augs_basic
         self._apply_augs_color = apply_augs_color
         self._apply_augs_geom = apply_augs_geom
+        self._apply_augs_mix = apply_augs_mix
 
         self.augs_basic = nn.Sequential(
-            RandomHorizontalFlip(p=0.75),
+            augmentations.RandomHorizontalFlip(p=1),
+            augmentations.RandomRotation(degrees=90.0, p=1)
         )
 
         self.augs_color = nn.Sequential(
-            ColorJitter(0.5, 0.5, 0.5, 0.5, p=0.75),
-            RandomChannelShuffle(p=0.75),
-            RandomHorizontalFlip(p=0.75),
-            RandomThinPlateSpline(p=0.75),
+            augmentations.ColorJitter(0.5, 0.5, 0.5, 0.5, p=0.3),
+            augmentations.RandomChannelShuffle(p=0.3),
+            augmentations.RandomGaussianNoise(p=0.3),
+            augmentations.RandomMedianBlur(p=0.3),
+            augmentations.RandomSharpness(1., p=0.3)
         )
 
         self.augs_geom = nn.Sequential(
-            RandomThinPlateSpline(p=0.75),
+            augmentations.RandomThinPlateSpline(p=0.3),
+            augmentations.RandomCrop((2, 2), p=.3, cropping_mode="resample"),
+            augmentations.RandomErasing(scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0.0, same_on_batch=False, p=0.1)
+        )
+
+        self.augs_mix = nn.Sequential(
+            augmentations.RandomCutMixV2(num_mix=1, p=.2),
         )
 
     @torch.no_grad()  # disable gradients for effiency
     def forward(self, x: Tensor) -> Tensor:
         # BxCxHxW
         if self._apply_augs_basic:
-            x = self.augs_basic(x)
+            # use either horizontal flip or random rotation
+            if torch.rand(1).item() < .5:
+                x = self.augs_basic[0](x)
+            else:
+                x = self.augs_basic[1](x)
         if self._apply_augs_color:
             x = self.augs_color(x)
         if self._apply_augs_geom:
             x = self.augs_geom(x)
-
+        if self._apply_augs_mix:
+            x = self.augs_mix(x)
         return x
 
 
@@ -57,7 +74,8 @@ class LitClassifier(lit.LightningModule):
         self.config = config
         self.learningrate = config['parameters']['learningrate']
         self.NUM_CLASSES = config['parameters']['num_classes']
-        self.transform = DataAugmentation(apply_augs_basic=True, apply_augs_color=True, apply_augs_geom=True)  # per batch augmentation_kornia
+        self.transform = DataAugmentation(apply_augs_basic=True, apply_augs_color=True,
+                                          apply_augs_geom=True, apply_augs_mix=True)  # per batch augmentation_kornia
 
         listmodels = timm.list_models(config['parameters']['model'])
         if len(listmodels) > 1:

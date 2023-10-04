@@ -103,8 +103,8 @@ def pad_to_imgsize(original_image, new_size):
     canvas = np.zeros((new_size, new_size, channels), dtype=np.uint8)
 
     # Calculate the position to paste the resized image with zero padding
-    x_offset = (640 - new_width) // 2
-    y_offset = (640 - new_height) // 2
+    x_offset = (new_size - new_width) // 2
+    y_offset = (new_size - new_height) // 2
 
     # Paste the resized image onto the blank canvas with zero padding
     canvas[y_offset:y_offset + new_height, x_offset:x_offset + new_width] = resized_image

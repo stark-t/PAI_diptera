@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
 
     # checkpoint_path
-    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/resnet18/23092817/checkpoints/epoch=87-step=193160.ckpt'
+    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/seresnet50/23100213/checkpoints/epoch=57-step=63684.ckpt'
 
     # get mean step time and train val loss
     log_console_path = get_nth_directory_from_end(checkpoint_path, 2)
