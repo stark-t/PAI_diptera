@@ -58,6 +58,7 @@ def cm_analysis(y_true, y_pred, labels, ymap=None, figsize=(7,7), filename=None,
         plt.savefig(filename)
     if plot is not None:
         plt.show()
+        plt.close()
         # plt.pause(1)  # 3 seconds, I use 1 usually
         # plt.close("all")
     else:

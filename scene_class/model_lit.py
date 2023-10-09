@@ -33,21 +33,21 @@ class DataAugmentation(nn.Module):
         )
 
         self.augs_color = nn.Sequential(
-            augmentations.ColorJitter(0.5, 0.5, 0.5, 0.5, p=0.3),
-            augmentations.RandomChannelShuffle(p=0.3),
-            augmentations.RandomGaussianNoise(p=0.3),
-            augmentations.RandomMedianBlur(p=0.3),
-            augmentations.RandomSharpness(1., p=0.3)
+            augmentations.ColorJitter(0.5, 0.5, 0.5, 0.5, p=0.1),
+            augmentations.RandomChannelShuffle(p=0.1),
+            augmentations.RandomGaussianNoise(p=0.1),
+            augmentations.RandomMedianBlur(p=0.1),
+            augmentations.RandomSharpness(1., p=0.1)
         )
 
         self.augs_geom = nn.Sequential(
-            augmentations.RandomThinPlateSpline(p=0.3),
-            augmentations.RandomCrop((2, 2), p=.3, cropping_mode="resample"),
+            augmentations.RandomThinPlateSpline(p=0.1),
+            augmentations.RandomCrop((2, 2), p=.1, cropping_mode="resample"),
             augmentations.RandomErasing(scale=(0.02, 0.33), ratio=(0.3, 3.3), value=0.0, same_on_batch=False, p=0.1)
         )
 
         self.augs_mix = nn.Sequential(
-            augmentations.RandomCutMixV2(num_mix=1, p=.2),
+            augmentations.RandomCutMixV2(num_mix=1, p=.1),
         )
 
     @torch.no_grad()  # disable gradients for effiency
@@ -114,8 +114,11 @@ class LitClassifier(lit.LightningModule):
 
     def on_after_batch_transfer(self, batch, batch_idx):
         x, y = batch
-        if self.trainer.training:
-            x = self.transform(x)  # => we perform GPU/Batched data augmentation
+        if not self.config["parameters"]["test_time_augmentation"]:
+            if self.trainer.training:
+                x = self.transform(x)  # => we perform GPU/Batched data augmentation
+        else:
+            x = self.transform(x)
         return x, y
 
 
@@ -171,6 +174,9 @@ class LitClassifier(lit.LightningModule):
 
     def predict_step(self, batch, batch_idx):
         # predict outputs for input batch and return as dictionary
+        if self.config['parameters']['test_time_dropout']:
+            # enable Monte Carlo Dropout
+            self.dropout.train()
         x, y = batch
         y_hat = self(x)
         return y_hat

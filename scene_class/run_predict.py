@@ -6,6 +6,8 @@ import pandas as pd
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
 
 import torch
 from pytorch_lightning import seed_everything
@@ -20,6 +22,8 @@ from confusion_matrix import cm_analysis
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score, top_k_accuracy_score, cohen_kappa_score
 from shutil import rmtree
+
+torch.set_float32_matmul_precision('medium')
 
 def convert_seconds_to_hh_mm_ss(seconds):
     hours, remainder = divmod(int(seconds), 3600)  # 3600 seconds in an hour
@@ -61,41 +65,45 @@ def run_predict(config, ckpt='checkpoint_path'):
         df_test = pd.concat([df_test, group_test])
 
     test_set = Dataset(path=df_test['file_path'].tolist(), config=config, norm=config['parameters']['normalization'])
-    test_loader = DataLoader(test_set, batch_size=16, num_workers=10)
 
-    if config['parameters']['verbose'] > 1:
-        grouped_df = df_train.groupby("family").nunique()
-        print(grouped_df)
-        randints = torch.randint(low=0, high=len(test_set), size=(10,))
-        for i in randints:
-            image, label = test_set[i]
-            plt.imshow(image.numpy()[0, :, :])
-            plt.title(str(label))
-            plt.show()
-            plt.close()
+    all_predictions = []
 
+    for _ in range(config['parameters']['test_time_iterations']):
+        test_loader = DataLoader(test_set, batch_size=16, num_workers=10, shuffle=False)
 
-    model = LitClassifier(config=config)
+        model = LitClassifier(config=config)
+        checkpoint = torch.load(ckpt)
+        model.load_state_dict(checkpoint["state_dict"])
 
-    checkpoint = torch.load(ckpt)
-    model.load_state_dict(checkpoint["state_dict"])
+        # Set the model in training mode to enable dropout during prediction
+        model.train()
 
-    trainer = lit.Trainer(
-        accelerator="gpu",
-        precision=16,
-        devices=torch.cuda.device_count(),
-        deterministic=False
-    )
-    predictions = trainer.predict(model, test_loader)
+        trainer = lit.Trainer(
+            accelerator="gpu",
+            precision=16,
+            devices=torch.cuda.device_count(),
+            deterministic=False
+        )
 
-    # Step 1: Concatenate all batched predictions into a single tensor
-    concatenated_predictions = torch.cat(predictions, dim=0)
+        predictions = trainer.predict(model, test_loader)
 
-    # Step 2: Convert the concatenated tensor to a NumPy array
-    preds_array = concatenated_predictions.numpy()
+        # Step 1: Concatenate all batched predictions into a single tensor
+        concatenated_predictions = torch.cat(predictions, dim=0)
 
-    # Step 3: Perform argmax to get class predictions for each item
-    preds_class = np.argmax(preds_array, axis=1)
+        # Step 2: Convert the concatenated tensor to a NumPy array
+        preds_array_mci = concatenated_predictions.numpy()
+
+        # Step 3: Perform argmax to get class predictions for each item
+        preds_class_mci = np.argmax(preds_array_mci, axis=1)
+
+        # Save the predictions for this iteration
+        all_predictions.append(preds_class_mci)
+
+    # Calculate the mean predictions across all iterations
+    preds_class_arr, counts = stats.mode(all_predictions, axis=0)
+    preds_class = preds_class_arr.squeeze().tolist()
+    preds_class_probability = [f/config['parameters']['test_time_iterations'] for f in counts]
+    preds_class_probability = preds_class_probability[0].squeeze().tolist()
 
     # Get label names
     labels_family = df_test['family'].tolist()
@@ -119,6 +127,32 @@ def run_predict(config, ckpt='checkpoint_path'):
     # get confusion matrix
     label_plot_name = [name[:3].capitalize() for name in label_familynames_sorted]
     cm_pd = cm_analysis(labels_class, preds_class, labels=label_plot_name, plot=True)
+
+    # Class probability
+    # Create a DataFrame
+    data = {
+        'labels': labels_class,
+        'probabilities': preds_class_probability,
+        'family': labels_family
+    }
+
+    df = pd.DataFrame(data)
+
+    # Extract the first three letters of labels_family for legend
+    df['family_short'] = df['family'].str[:3]
+
+    # Create a grouped error boxplot using Seaborn
+    # plt.figure(figsize=(8, 6))
+    sns.set(style="whitegrid")
+    sns.boxplot(x='family_short', y='probabilities', data=df, palette="Set3")
+    plt.title("Diptera Probabilities")
+    plt.xlabel("Family")
+    plt.ylabel("Probabilities")
+    plt.show()
+    # plt.close()
+
+
+    d=1
 
     # save_inference_images
     # if config['parameters']['save_inference_images']:
@@ -144,7 +178,7 @@ if __name__ == "__main__":
 
 
     # checkpoint_path
-    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/seresnet50/23100213/checkpoints/epoch=57-step=63684.ckpt'
+    checkpoint_path = '/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/logs/resnet18/23100812/checkpoints/epoch=53-step=59292.ckpt'
 
     # get mean step time and train val loss
     log_console_path = get_nth_directory_from_end(checkpoint_path, 2)

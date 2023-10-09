@@ -26,9 +26,13 @@ def get_console_output(log_console_path='path'):
                 time_parts = [f for f in line_parts if '<' in f][0]
                 time_str = time_parts.split('<')[0]
                 time_str = time_str.split('[')[-1]
-                minutes, seconds = map(int, time_str.split(':'))
-                total_seconds = (minutes * 60) + seconds
-                times.append(float(total_seconds))
+                try:
+                    minutes, seconds = map(int, time_str.split(':'))
+                    total_seconds = (minutes * 60) + seconds
+                    times.append(float(total_seconds))
+                except Exception as e:
+                    print(f"Error encountered when processing {time_str}: {e}")
+
 
             if 'Epoch' in line and 'train_loss' in line and 'val_loss' in line:
                 # get losses

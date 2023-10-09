@@ -9,9 +9,12 @@ paths:
     results_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # !!! Under results_path must be a folder named "models" and "predictions"
     images_stats_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_stats.csv"
 parameters:
-    model: seresnet50 #vit_large_patch16_224  #efficientnet_b4  # resnet18  # efficientnet_b3  #   # stnet
+    model: resnet18 #vit_large_patch16_224  #efficientnet_b4  # resnet18  # efficientnet_b3  #   # stnet
     pretrained: True
-    dropout: 0.3
+    dropout: 0.5
+    test_time_iterations: 10
+    test_time_dropout: True
+    test_time_augmentation: True
     bit_depth: 8
     epochs: 100
     image_size: 512 # only select image sizes devisible by 32
