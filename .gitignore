@@ -1,6 +1,18 @@
 scene_class/config.yaml
 scene_class/lightning_logs
 scene_class/logs
+logs/*
+
+# File enings
+*.xml
+*.iml
+*.png
+events.out.*
+*.txt
+
+
+
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
