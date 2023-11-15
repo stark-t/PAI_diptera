@@ -2,12 +2,23 @@ from sklearn.metrics import confusion_matrix
 import numpy as np
 import pandas as pd
 import matplotlib
-matplotlib.use('TkAgg')
+
+# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 # Confusion Matrix Function:
-def cm_analysis(y_true, y_pred, labels, ymap=None, figsize=(7,7), filename=None, filename_tex=None, plot=None):
+def cm_analysis(
+    y_true,
+    y_pred,
+    labels,
+    ymap=None,
+    figsize=(7, 7),
+    filename=None,
+    filename_tex=None,
+    plot=None,
+):
     """
     Generate matrix plot of confusion matrix with pretty annotations.
     The plot image is saved to disk.
@@ -41,21 +52,29 @@ def cm_analysis(y_true, y_pred, labels, ymap=None, figsize=(7,7), filename=None,
             p = cm_perc[i, j]
             if i == j:
                 s = cm_sum[i]
-                annot[i, j] = '%.1f%%\n%d/%d' % (p, c, s)
+                annot[i, j] = "%.1f%%\n%d/%d" % (p, c, s)
             elif c == 0:
-                annot[i, j] = ''
+                annot[i, j] = ""
             else:
-                annot[i, j] = '%.1f%%\n%d' % (p, c)
+                annot[i, j] = "%.1f%%\n%d" % (p, c)
 
     cm_pd = pd.DataFrame(cm_perc, index=labels, columns=labels)
     fig, ax = plt.subplots(figsize=figsize)
-    sns.heatmap(cm_pd, annot=annot, fmt='', ax=ax, cmap='Blues', square=True, annot_kws={"size": 8})
-    ax.set_xlabel('\nPredicted')
-    ax.set_ylabel('Actual\n')
+    sns.heatmap(
+        cm_pd,
+        annot=annot,
+        fmt="",
+        ax=ax,
+        cmap="Blues",
+        square=True,
+        annot_kws={"size": 8},
+    )
+    ax.set_xlabel("\nPredicted")
+    ax.set_ylabel("Actual\n")
     ax.figure.tight_layout()
     ax.figure.subplots_adjust(bottom=0.2)
     if filename is not None:
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=600)
     if plot is not None:
         plt.show()
         plt.close()
@@ -63,7 +82,6 @@ def cm_analysis(y_true, y_pred, labels, ymap=None, figsize=(7,7), filename=None,
         # plt.close("all")
     else:
         plt.close()
-
 
     # if filename_tex is not None :
     #     with open(filename_tex, 'w') as f:
@@ -87,6 +105,5 @@ def cm_analysis(y_true, y_pred, labels, ymap=None, figsize=(7,7), filename=None,
     #                 cm[7, 0], cm[7, 1], cm[7, 2], cm[7, 3], cm[7, 4], cm[7, 5], cm[7, 6], cm[7, 7], cm[7, 8],
     #                 cm[8, 0], cm[8, 1], cm[8, 2], cm[8, 3], cm[8, 4], cm[8, 5], cm[8, 6], cm[8, 7], cm[8, 8],
     #             ))
-
 
     return cm_pd
