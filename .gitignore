@@ -9,6 +9,7 @@ logs/*
 *.png
 events.out.*
 *.txt
+history
 
 
 
