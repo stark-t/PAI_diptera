@@ -16,7 +16,6 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as lit
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from pytorch_lightning.callbacks import TQDMProgressBar
 
 from dataset import Dataset
@@ -46,7 +45,6 @@ def main(config, log_itmes):
     # Get data
     train_set = Dataset(path=df_train['file_path'].tolist(), config=config, norm=config['parameters']['normalization'])
     val_set = Dataset(path=df_val['file_path'].tolist(), config=config, norm=config['parameters']['normalization'])
-    test_set = Dataset(path=df_test['file_path'].tolist(), config=config, norm=config['parameters']['normalization'])
 
     if config['parameters']['verbose'] >= 1:
         grouped_df = df_train.groupby("family").nunique()
@@ -66,11 +64,9 @@ def main(config, log_itmes):
         train_set, batch_size=batch_size, num_workers=n_cpu, shuffle=True)
     val_loader = DataLoader(
         val_set, batch_size=batch_size, num_workers=n_cpu)
-    test_loader = DataLoader(
-        test_set, batch_size=batch_size, num_workers=n_cpu)
+
 
     # Logger and Callbacks
-
     class NoValidationProgressBar(TQDMProgressBar):
         def init_validation_tqdm(self):
             bar = super().init_validation_tqdm()
@@ -96,8 +92,6 @@ def main(config, log_itmes):
 
     # Model
     model = LitClassifier(config=config)
-
-
 
     warnings.warn("Start training")
     warnings.warn("Print loggings can be found in log-file only")
