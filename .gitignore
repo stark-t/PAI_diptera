@@ -2,7 +2,7 @@ scene_class/config.yaml
 scene_class/lightning_logs
 scene_class/logs
 logs/*
-
+lightning_logs
 # File enings
 *.xml
 *.iml
