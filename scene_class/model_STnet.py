@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchvision
-import timm
+import STnet_CNN
 import pytorch_lightning as lit
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, ReduceLROnPlateau
@@ -91,31 +91,7 @@ class LitClassifier(lit.LightningModule):
             apply_augs_mix=True,
         )  # per batch augmentation_kornia
 
-        listmodels = timm.list_models(config["parameters"]["model"])
-        if len(listmodels) > 1:
-            print("Use specific timm model")
-            print("Models selected:")
-            print(listmodels)
-            print(1 / 0)
-
-        timm_model = listmodels[0]
-
-        # Load the pretrained model from Timm with the specified name
-        self.feature_extractor = timm.create_model(
-            timm_model,
-            pretrained=config["parameters"]["pretrained"],
-            num_classes=0,
-            global_pool="",
-        )
-
-        # Determine the input size for the classifier dynamically
-        num_features = self.feature_extractor.num_features
-
-        # Add a dropout layer
-        self.dropout = nn.Dropout(p=config["parameters"]["dropout"])
-
-        # Add a linear layer for classification
-        self.classifier = nn.Linear(num_features, config["parameters"]["num_classes"])
+        self.model = STnet_CNN.STnet(input_channel=3, num_classes=self.NUM_CLASSES)
 
     def show_batch(self, win_size=(10, 10)):
         def _to_vis(data):
@@ -195,18 +171,14 @@ class LitClassifier(lit.LightningModule):
 
     def predict_step(self, batch, batch_idx):
         # predict outputs for input batch and return as dictionary
-        if self.config["parameters"]["test_time_dropout"]:
-            # enable Monte Carlo Dropout
-            self.dropout.train()
+        # if self.config["parameters"]["test_time_dropout"]:
+        #     # enable Monte Carlo Dropout
+        #     self.dropout.train()
         x, y = batch
         y_hat = self(x)
         return y_hat
 
     def forward(self, x):
         # Forward pass through the network
-        features = self.feature_extractor(x)
-        features = F.adaptive_avg_pool2d(features, (1, 1))  # Global average pooling
-        features = features.view(features.size(0), -1)  # Flatten
-        features = self.dropout(features)
-        logits = self.classifier(features)
+        logits = self.model(x)
         return logits

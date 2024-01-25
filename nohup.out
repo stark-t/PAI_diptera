@@ -1,0 +1,93 @@
+Seed set to 42
+/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/scene_class_order.py:128: UserWarning: Start training
+  warnings.warn("Start training")
+/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/scene_class_order.py:129: UserWarning: Print loggings can be found in log-file only
+  warnings.warn("Print loggings can be found in log-file only")
+/localhome/star_th/miniforge3/envs/paidiptera_torch/lib/python3.11/site-packages/torch/cuda/__init__.py:611: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name      | Type             | Params
+-----------------------------------------------
+0 | transform | DataAugmentation | 0     
+1 | model     | STnet            | 3.1 M 
+-----------------------------------------------
+3.1 M     Trainable params
+0         Non-trainable params
+3.1 M     Total params
+12.531    Total estimated model params size (MB)
+/localhome/star_th/miniforge3/envs/paidiptera_torch/lib/python3.11/site-packages/pytorch_lightning/trainer/call.py:54: Detected KeyboardInterrupt, attempting graceful shutdown...
+Seed set to 42
+/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/scene_class_order.py:128: UserWarning: Start training
+  warnings.warn("Start training")
+/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/scene_class_order.py:129: UserWarning: Print loggings can be found in log-file only
+  warnings.warn("Print loggings can be found in log-file only")
+/localhome/star_th/miniforge3/envs/paidiptera_torch/lib/python3.11/site-packages/torch/cuda/__init__.py:611: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name      | Type             | Params
+-----------------------------------------------
+0 | transform | DataAugmentation | 0     
+1 | model     | STnet            | 3.1 M 
+-----------------------------------------------
+3.1 M     Trainable params
+0         Non-trainable params
+3.1 M     Total params
+12.531    Total estimated model params size (MB)
+Metric val_loss improved. New best score: 2.793
+Metric val_loss improved by 0.057 >= min_delta = 0.01. New best score: 2.735
+Metric val_loss improved by 0.035 >= min_delta = 0.01. New best score: 2.701
+Metric val_loss improved by 0.062 >= min_delta = 0.01. New best score: 2.639
+Metric val_loss improved by 0.218 >= min_delta = 0.01. New best score: 2.421
+Metric val_loss improved by 0.045 >= min_delta = 0.01. New best score: 2.376
+Metric val_loss improved by 0.013 >= min_delta = 0.01. New best score: 2.364
+Metric val_loss improved by 0.188 >= min_delta = 0.01. New best score: 2.176
+Metric val_loss improved by 0.027 >= min_delta = 0.01. New best score: 2.148
+Metric val_loss improved by 0.039 >= min_delta = 0.01. New best score: 2.109
+Metric val_loss improved by 0.074 >= min_delta = 0.01. New best score: 2.035
+Metric val_loss improved by 0.033 >= min_delta = 0.01. New best score: 2.002
+Metric val_loss improved by 0.012 >= min_delta = 0.01. New best score: 1.990
+Metric val_loss improved by 0.011 >= min_delta = 0.01. New best score: 1.978
+Monitored metric val_loss did not improve in the last 34 records. Best score: 1.978. Signaling Trainer to stop.
+Seed set to 42
+model.safetensors:   0%|          | 0.00/22.1M [00:00<?, ?B/s]model.safetensors:  48%|████▊     | 10.5M/22.1M [00:00<00:00, 22.7MB/s]model.safetensors:  95%|█████████▌| 21.0M/22.1M [00:00<00:00, 23.3MB/s]model.safetensors: 100%|██████████| 22.1M/22.1M [00:00<00:00, 23.2MB/s]
+/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/scene_class_order.py:128: UserWarning: Start training
+  warnings.warn("Start training")
+/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/scene_class_order.py:129: UserWarning: Print loggings can be found in log-file only
+  warnings.warn("Print loggings can be found in log-file only")
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+IPU available: False, using: 0 IPUs
+HPU available: False, using: 0 HPUs
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name              | Type             | Params
+-------------------------------------------------------
+0 | transform         | DataAugmentation | 0     
+1 | feature_extractor | MobileNetV3      | 4.2 M 
+2 | dropout           | Dropout          | 0     
+3 | classifier        | Linear           | 19.2 K
+-------------------------------------------------------
+4.2 M     Trainable params
+0         Non-trainable params
+4.2 M     Total params
+16.885    Total estimated model params size (MB)
+Metric val_loss improved. New best score: 1.986
+Metric val_loss improved by 0.170 >= min_delta = 0.01. New best score: 1.816
+Metric val_loss improved by 0.478 >= min_delta = 0.01. New best score: 1.338
+Metric val_loss improved by 0.050 >= min_delta = 0.01. New best score: 1.289
+Metric val_loss improved by 0.059 >= min_delta = 0.01. New best score: 1.230
+Metric val_loss improved by 0.022 >= min_delta = 0.01. New best score: 1.208
+Metric val_loss improved by 0.054 >= min_delta = 0.01. New best score: 1.154
+Metric val_loss improved by 0.051 >= min_delta = 0.01. New best score: 1.102
+Metric val_loss improved by 0.095 >= min_delta = 0.01. New best score: 1.007
+Monitored metric val_loss did not improve in the last 34 records. Best score: 1.007. Signaling Trainer to stop.

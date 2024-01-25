@@ -89,5 +89,5 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # checkpoint_path
-    prediction_path = "./logs/resnet18/23110416/probabilities.csv"
+    prediction_path = "./logs/STnet/24011911/probabilities.csv"
     run_results(config, prediction_path)

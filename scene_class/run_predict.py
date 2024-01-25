@@ -1,6 +1,5 @@
 import argparse
 import yaml
-from tqdm import tqdm
 from glob import iglob
 import pandas as pd
 import os
@@ -17,6 +16,7 @@ import pytorch_lightning as lit
 
 from dataset import Dataset
 from model_lit import LitClassifier
+from model_STnet import LitClassifier as LitClassifier_STnet
 from utils_get_console_output import get_console_output
 
 from confusion_matrix import cm_analysis
@@ -90,7 +90,11 @@ def run_predict(config, ckpt="checkpoint_path"):
     for _ in range(config["parameters"]["test_time_iterations"]):
         test_loader = DataLoader(test_set, batch_size=16, num_workers=10, shuffle=False)
 
-        model = LitClassifier(config=config)
+        # Model
+        if config["parameters"]["model"] == "STnet":
+            model = LitClassifier_STnet(config=config)
+        else:
+            model = LitClassifier(config=config)
         checkpoint = torch.load(ckpt)
         model.load_state_dict(checkpoint["state_dict"])
 
@@ -142,15 +146,35 @@ def run_predict(config, ckpt="checkpoint_path"):
     print("Kappa:  {:.2f}".format(acc_kappa * 100))
     # if there are more labels than prediction classes fix this
     if len(np.unique(preds_class)) != len(np.unique(labels_class)):
-        preds_class.extend(label_int)
-        labels_class.extend(label_int)
+        print("Unique Preds: {}".format(np.unique(preds_class)))
+        print("Unique Lables: {}".format(np.unique(labels_class)))
+        # Get the missing predictions
+        missing_preds = set(labels_class) - set(preds_class)
+        print("Missing Predictions: {}".format(missing_preds))
+        # Get the missing labels
+        missing_labels = set(preds_class) - set(labels_class)
+        print("Missing Labels: {}".format(missing_labels))
+        # Add each missing item from missing_preds to preds_class
+        for item in missing_preds:
+            preds_class.extend([item])
+            labels_class.extend([item])
+            preds_class_probability.extend([0.0])
+            labels_family.extend([item])
+        # Add each missing item from missing_labels to labels_class
+        for item in missing_labels:
+            preds_class.extend([item])
+            labels_class.extend([item])
+            preds_class_probability.extend([0.0])
+            labels_family.extend([item])
+        # preds_class.extend(label_int)
+        # labels_class.extend(label_int)
 
     # get figure path
     log_console_path = get_nth_directory_from_end(checkpoint_path, 2)
 
     # get confusion matrix
     label_plot_name = [name[:3].capitalize() for name in label_familynames_sorted]
-    cm_pd = cm_analysis(
+    _ = cm_analysis(
         labels_class,
         preds_class,
         labels=label_plot_name,
@@ -168,6 +192,10 @@ def run_predict(config, ckpt="checkpoint_path"):
         "family": labels_family,
     }
 
+    # Print length of values and their names
+    for name, values in data.items():
+        print(f"Length of {name}: {len(values)}")
+
     df = pd.DataFrame(data)
     df.to_csv(os.path.join(log_console_path, "probabilities.csv"))
 
@@ -184,8 +212,6 @@ def run_predict(config, ckpt="checkpoint_path"):
     plt.show()
     plt.savefig(os.path.join(log_console_path, "box.png"), dpi=600)
 
-    d = 1
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -201,7 +227,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # checkpoint_path
-    checkpoint_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/seresnext26d_32x4d/23112311/checkpoints/epoch=71-step=158040.ckpt"
+    checkpoint_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/mobilenetv3_large_100/24012311/checkpoints/epoch=47-step=105360.ckpt"
 
     # get mean step time and train val loss
     log_path = get_nth_directory_from_end(checkpoint_path, 2)

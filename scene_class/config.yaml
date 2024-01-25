@@ -7,7 +7,7 @@ paths:
     results_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # !!! Under results_path must be a folder named "models" and "predictions"
     images_stats_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_stats.csv"
 parameters:
-    model: seresnext26d_32x4d #vit_base_patch16_224  #efficientnet_b4  # resnet18  # efficientnet_b3  #   # stnet
+    model: mobilenetv3_large_100 #vit_base_patch16_224  #efficientnet_b4  # resnet18  # efficientnet_b3  #   # stnet
     pretrained: True
     dropout: 0.5
     test_time_iterations: 100
