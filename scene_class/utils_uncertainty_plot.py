@@ -61,8 +61,8 @@ print(combined_df.head())
 # plt.savefig(os.path.join("D:\\2023_PAI_diptera\\PAI_diptera\\data\\results", "boxplot_allCNNs.png"), dpi=300)
 # plt.show()
 
-# # Filter the combined_df based on labels == prediction
-# filtered_df = combined_df[combined_df['labels'] == combined_df['prediction']]
+# Filter the combined_df based on labels == prediction
+df = combined_df[combined_df['labels'] == combined_df['prediction']]
 
 # # Create a grouped error boxplot using Seaborn
 # plt.figure(figsize=(23, 8))ST
@@ -80,12 +80,12 @@ print(combined_df.head())
 # plt.show()
 
 # Calculate the mean probability per class for all model_names
-mean_probabilities = combined_df.groupby(['model_name', 'family'])['probabilities'].mean()
+mean_probabilities = df.groupby(['model_name', 'family'])['probabilities'].mean()
 
 # Pivot the mean_probabilities DataFrame
 pivot_table = mean_probabilities.reset_index().pivot(index='model_name', columns='family', values='probabilities')
 
-# Convert the pivot table values to xx.xx% format
+# Convert the pivot table values to xx.xx% formatSt
 pivot_table_humanreadable = pivot_table.applymap(lambda x: f'{x:.2%}')
 
 # Print the pivot table
@@ -96,7 +96,39 @@ with open(os.path.join("D:\\2023_PAI_diptera\\PAI_diptera\\data\\results", 'pivo
     file.write(pivot_table_humanreadable.to_latex())
 
 # Calculate the mean probability per class for all model_names
-mean_probabilities_all = combined_df.groupby(['model_name'])['probabilities'].mean()
-print(mean_probabilities_all)
+mean_probabilities_all = df.groupby(['model_name'])['probabilities'].mean()
+print(mean_probabilities_all.apply(lambda x: f'{x:.2%}'))
+
+# # Create a confidence matrix
+# # Create a 2x2 matrix where "Confident Correct", "Confident Incorrect", "Not Confident Correct", and "Not Confident Incorrect" are the classes
+# # Filter the dataframe based on the conditions
+# matrix_confident_correct = df[(df["labels"] == df["prediction"]) & (df["probabilities"] > 0.5)].shape[0]
+# matrix_confident_incorrect = df[(df["labels"] != df["prediction"]) & (df["probabilities"] > 0.5)].shape[0]
+# matrix_not_confident_correct = df[(df["labels"] == df["prediction"]) & (df["probabilities"] <= 0.5)].shape[0]
+# matrix_not_confident_incorrect = df[(df["labels"] != df["prediction"]) & (df["probabilities"] <= 0.5)].shape[0]
+
+# # Create a dataframe from the matrix
+# matrix_data = {
+#     "Confident Correct": [matrix_confident_correct],
+#     "Confident Incorrect": [matrix_confident_incorrect],
+#     "Not Confident Correct": [matrix_not_confident_correct],
+#     "Not Confident Incorrect": [matrix_not_confident_incorrect]
+# }
+# matrix_df = pd.DataFrame(matrix_data)
+# print(matrix_df)
+
+# # Create a seaborn heatmap of the confidence matrix
+# sns.heatmap(matrix_df, annot=True, fmt="d", cmap="binary", cbar=False)
+# plt.title("Confidence Matrix")
+# plt.show()
+
+EfficientNet_b4_df = combined_df[combined_df['model_name'] == 'EfficientNet_b4']
+
+# Create a heatmap of the confusion matrix
+plt.figure(figsize=(10, 10))
+sns.set(font_scale=1.5)  # Set the font scale to 1.5
+sns.heatmap(pd.crosstab(EfficientNet_b4_df['labels'], EfficientNet_b4_df['prediction'], normalize='index'), annot=True, fmt=".2%", cmap="binary", cbar=False)
+plt.title("Confusion Matrix")
+plt.show()
 
 
