@@ -10,6 +10,9 @@ lightning_logs
 events.out.*
 *.txt
 history
+*.csv
+data/results/*.png
+
 
 
 
@@ -144,3 +147,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+data/resutls.zip
+data/results/resutls/efficientnetb4_probabilities.csv
+data/results/resutls/mobilenetv3large_probabilities.csv
+data/results/resutls/resnet18_probabilities.csv
+data/results/resutls/seresnext32x4d_probabilities.csv
+data/results/resutls/stnet_probabilities.csv
