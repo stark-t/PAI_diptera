@@ -155,3 +155,4 @@ data/results/resutls/mobilenetv3large_probabilities.csv
 data/results/resutls/resnet18_probabilities.csv
 data/results/resutls/seresnext32x4d_probabilities.csv
 data/results/resutls/stnet_probabilities.csv
+nohup.out
