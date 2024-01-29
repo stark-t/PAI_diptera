@@ -12,6 +12,8 @@ events.out.*
 history
 *.csv
 data/results/*.png
+*.out
+*.log
 
 
 
