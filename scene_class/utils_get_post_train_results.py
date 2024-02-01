@@ -47,30 +47,30 @@ def run_results(config, prediction_path):
     print("Overall Accuracy:  {:.2f}".format(acc_balanced * 100))
     print("Kappa:  {:.2f}".format(acc_kappa * 100))
 
-    # Create a confidence matrix
-    # Create a 2x2 matrix where "Confident Correct", "Confident Incorrect", "Not Confident Correct", and "Not Confident Incorrect" are the classes
-    # Filter the dataframe based on the conditions
-    matrix_confident_correct = df[(df["labels"] == df["prediction"]) & (df["probabilities"] > 0.5)].shape[0]
-    matrix_confident_incorrect = df[(df["labels"] != df["prediction"]) & (df["probabilities"] > 0.5)].shape[0]
-    matrix_not_confident_correct = df[(df["labels"] == df["prediction"]) & (df["probabilities"] <= 0.5)].shape[0]
-    matrix_not_confident_incorrect = df[(df["labels"] != df["prediction"]) & (df["probabilities"] <= 0.5)].shape[0]
+    # # Create a confidence matrix
+    # # Create a 2x2 matrix where "Confident Correct", "Confident Incorrect", "Not Confident Correct", and "Not Confident Incorrect" are the classes
+    # # Filter the dataframe based on the conditions
+    # matrix_confident_correct = df[(df["labels"] == df["prediction"]) & (df["probabilities"] > 0.5)].shape[0]
+    # matrix_confident_incorrect = df[(df["labels"] != df["prediction"]) & (df["probabilities"] > 0.5)].shape[0]
+    # matrix_not_confident_correct = df[(df["labels"] == df["prediction"]) & (df["probabilities"] <= 0.5)].shape[0]
+    # matrix_not_confident_incorrect = df[(df["labels"] != df["prediction"]) & (df["probabilities"] <= 0.5)].shape[0]
 
-    # Create a dataframe from the matrix
-    matrix_data = {
-        "Confident Correct": [matrix_confident_correct],
-        "Confident Incorrect": [matrix_confident_incorrect],
-        "Not Confident Correct": [matrix_not_confident_correct],
-        "Not Confident Incorrect": [matrix_not_confident_incorrect]
-    }
-    matrix_df = pd.DataFrame(matrix_data)
-    print(matrix_df)
+    # # Create a dataframe from the matrix
+    # matrix_data = {
+    #     "Confident Correct": [matrix_confident_correct],
+    #     "Confident Incorrect": [matrix_confident_incorrect],
+    #     "Not Confident Correct": [matrix_not_confident_correct],
+    #     "Not Confident Incorrect": [matrix_not_confident_incorrect]
+    # }
+    # matrix_df = pd.DataFrame(matrix_data)
+    # print(matrix_df)
 
-    # Create a seaborn heatmap of the confidence matrix
-    sns.heatmap(matrix_df, annot=True, fmt="d", cmap="binary", cbar=False)
-    plt.title("Confidence Matrix")
-    plt.show()
+    # # Create a seaborn heatmap of the confidence matrix
+    # sns.heatmap(matrix_df, annot=True, fmt="d", cmap="binary", cbar=False)
+    # plt.title("Confidence Matrix")
+    # plt.show()
     
-    d=1
+    # d=1
 
 
 
@@ -89,5 +89,5 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # checkpoint_path
-    prediction_path = "./logs/STnet/24011911/probabilities.csv"
+    prediction_path = "logs/mobilenetv3_large_100/24012611/probabilities.csv"
     run_results(config, prediction_path)

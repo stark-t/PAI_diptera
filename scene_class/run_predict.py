@@ -227,7 +227,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # checkpoint_path
-    checkpoint_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/mobilenetv3_large_100/24012311/checkpoints/epoch=47-step=105360.ckpt"
+    checkpoint_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/efficientnet_b4/24012913/checkpoints/epoch=36-step=81215.ckpt"
 
     # get mean step time and train val loss
     log_path = get_nth_directory_from_end(checkpoint_path, 2)
