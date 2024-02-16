@@ -70,10 +70,10 @@ def run_predict(config, ckpt="checkpoint_path"):
     # Split each group into train, val, and test
     for _, group in groups:
         group_train, group_temp = train_test_split(
-            group, test_size=0.4, random_state=42
+            group, test_size=0.4, random_state=config["parameters"]["seed"]
         )
         group_val, group_test = train_test_split(
-            group_temp, test_size=0.5, random_state=42
+            group_temp, test_size=0.5, random_state=config["parameters"]["seed"]
         )
         df_train = pd.concat([df_train, group_train])
         df_val = pd.concat([df_val, group_val])
@@ -227,7 +227,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # checkpoint_path
-    checkpoint_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/efficientnet_b4/24012913/checkpoints/epoch=36-step=81215.ckpt"
+    checkpoint_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/efficientnet_b4/24021510/checkpoints/epoch=21-step=48290.ckpt"
 
     # get mean step time and train val loss
     log_path = get_nth_directory_from_end(checkpoint_path, 2)

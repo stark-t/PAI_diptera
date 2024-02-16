@@ -32,7 +32,6 @@ torch.set_float32_matmul_precision("medium")
 sns.set(rc={"figure.figsize": (13, 13)})
 
 
-
 def run_results(config, prediction_path):
     # Get data
     df = pd.read_csv(prediction_path)
@@ -69,10 +68,8 @@ def run_results(config, prediction_path):
     # sns.heatmap(matrix_df, annot=True, fmt="d", cmap="binary", cbar=False)
     # plt.title("Confidence Matrix")
     # plt.show()
-    
+
     # d=1
-
-
 
 
 if __name__ == "__main__":
@@ -89,5 +86,5 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # checkpoint_path
-    prediction_path = "logs/mobilenetv3_large_100/24012611/probabilities.csv"
+    prediction_path = "logs/resnet18/23110416/probabilities.csv"
     run_results(config, prediction_path)

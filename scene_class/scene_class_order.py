@@ -42,10 +42,10 @@ def main(config, log_itmes):
     # Split each group into train, val, and test
     for _, group in groups:
         group_train, group_temp = train_test_split(
-            group, test_size=0.4, random_state=42
+            group, test_size=0.4, random_state=config["parameters"]["seed"]
         )
         group_val, group_test = train_test_split(
-            group_temp, test_size=0.5, random_state=42
+            group_temp, test_size=0.5, random_state=config["parameters"]["seed"]
         )
         df_train = pd.concat([df_train, group_train])
         df_val = pd.concat([df_val, group_val])
