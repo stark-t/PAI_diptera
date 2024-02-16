@@ -23,7 +23,6 @@ from confusion_matrix import cm_analysis
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     balanced_accuracy_score,
-    top_k_accuracy_score,
     cohen_kappa_score,
 )
 from shutil import rmtree
@@ -54,7 +53,7 @@ def run_predict(config, ckpt="checkpoint_path"):
     ]
     label_familynames_sorted = sorted(label_familynames)
     # label_familynames_sorted = label_familynames_sorted[:-3]
-    label_int = list(range(len(label_familynames_sorted)))
+    label_int = list(range(len(label_familynames_sorted)))  # noqa: F841
 
     all_files = list(iglob(config["paths"]["data_path"] + os.sep + "*.jpeg"))
     file_df = pd.DataFrame({"file_path": all_files})
