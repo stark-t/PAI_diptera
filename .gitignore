@@ -3,8 +3,10 @@ scene_class/lightning_logs
 scene_class/logs
 logs/*
 lightning_logs
+data/results/*
 # File enings
 *.xml
+*.out
 *.iml
 *.png
 events.out.*
@@ -155,4 +157,5 @@ data/results/resutls/mobilenetv3large_probabilities.csv
 data/results/resutls/resnet18_probabilities.csv
 data/results/resutls/seresnext32x4d_probabilities.csv
 data/results/resutls/stnet_probabilities.csv
+nohup.out
 nohup.out
