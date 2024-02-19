@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
 import time
+from glob import glob
 
 import torch
 from pytorch_lightning import seed_everything
@@ -169,7 +170,7 @@ def run_predict(config, ckpt="checkpoint_path"):
         # labels_class.extend(label_int)
 
     # get figure path
-    log_console_path = get_nth_directory_from_end(args.checkpoint_path, 2)
+    log_console_path = get_nth_directory_from_end(checkpoint_path, 2)
 
     # get confusion matrix
     label_plot_name = [name[:3].capitalize() for name in label_familynames_sorted]
@@ -223,7 +224,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default="/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/x.pth",
+        default="None",
         help="Path to checkpoint file",
     )
 
@@ -233,10 +234,25 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     # checkpoint_path
-    # checkpoint_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/efficientnet_b4/24021510/checkpoints/epoch=21-step=48290.ckpt"
+    if args.checkpoint_path == "None":
+        model_name = config["parameters"]["model"]
+        model_base_path = os.path.join(
+            "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs",
+            model_name,
+        )
+        model_dir = [
+            d
+            for d in os.listdir(model_base_path)
+            if os.path.isdir(os.path.join(model_base_path, d))
+        ][-1]
+        checkpoint_path = glob(
+            os.path.join(model_base_path, model_dir, "checkpoints", "*.ckpt")
+        )[0]
+    else:
+        checkpoint_path = args.checkpoint_path
 
     # get mean step time and train val loss
-    log_path = get_nth_directory_from_end(args.checkpoint_path, 2)
+    log_path = get_nth_directory_from_end(checkpoint_path, 2)
     log_console_path = os.path.join(log_path, "log_console.txt")
     secondsperepoch, train_loss, val_loss = get_console_output(
         log_console_path=log_console_path
@@ -244,7 +260,7 @@ if __name__ == "__main__":
 
     # get predictions
     t0 = time.time()
-    run_predict(config, ckpt=args.checkpoint_path)
+    run_predict(config, ckpt=checkpoint_path)
     t1 = time.time()
     print(
         "{}-Monte Carlo Interation took:".format(
@@ -261,7 +277,7 @@ if __name__ == "__main__":
     rmtree(lighntinglogdir)
 
     # print time
-    epochs = int(args.checkpoint_path.split("epoch=")[-1].split("-step")[0])
+    epochs = int(checkpoint_path.split("epoch=")[-1].split("-step")[0])
     total_seconds = secondsperepoch * epochs
 
     train_hours, train_minutes, train_seconds = convert_seconds_to_hh_mm_ss(
