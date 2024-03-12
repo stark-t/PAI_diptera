@@ -224,7 +224,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default="None",
+        default="/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/efficientnet_b4/24030109/checkpoints/epoch=69-step=153650.ckpt",
         help="Path to checkpoint file",
     )
 

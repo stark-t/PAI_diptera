@@ -24,4 +24,4 @@ parameters:
     optimizer: 'adam'
     verbose: 0 # verbose 0,1,2 or 3
     save_inference_images: True
-    seed: 99 #42
+    seed: 1337 #99 #42
