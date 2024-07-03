@@ -1,0 +1,45 @@
+import os
+import cv2
+import numpy as np
+
+input_dir = '/media/star_th/SSD_ExFAT/2023_PAI_diptera/results/figures_lowest_std'
+output_dir = '/media/star_th/SSD_ExFAT/2023_PAI_diptera/results/cropped_images'
+resize_width = 675
+resize_height = 525
+
+# Create the output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
+
+# Iterate over all files in the input directory
+for filename in os.listdir(input_dir):
+    if filename.endswith('.jpeg'):
+        # Read the image
+        image_path = os.path.join(input_dir, filename)
+        image = cv2.imread(image_path)
+
+        # Get the dimensions of the image
+        height, width, _ = image.shape
+
+        # Calculate the resize ratio
+        ratio = min(resize_width / width, resize_height / height)
+
+        # Calculate the new dimensions for resizing
+        new_width = int(width * ratio)
+        new_height = int(height * ratio)
+
+        # Resize the image while maintaining the aspect ratio
+        resized_image = cv2.resize(image, (new_width, new_height))
+
+        # Create a white canvas with the desired dimensions
+        canvas = np.ones((resize_height, resize_width, 3), dtype=np.uint8) * 255
+
+        # Calculate the coordinates for centering the resized image on the canvas
+        x = (resize_width - new_width) // 2
+        y = (resize_height - new_height) // 2
+
+        # Paste the resized image onto the canvas
+        canvas[y:y+new_height, x:x+new_width] = resized_image
+
+        # Save the padded and resized image
+        output_path = os.path.join(output_dir, filename)
+        cv2.imwrite(output_path, canvas)

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 # Get all the csv files in the results folder
-csv_files = glob.glob("data/results/*.csv")
+csv_files = glob.glob("data/results/pretrained_BB/.csv")
 
 # Create an empty DataFrame to store the combined data
 combined_df = pd.DataFrame()
@@ -47,53 +47,53 @@ print(combined_df.tail())
 # Filter the combined_df based on labels == prediction
 df = combined_df[combined_df["labels"] == combined_df["prediction"]]
 
-# # Create a grouped error boxplot using Seaborn
-plt.figure(figsize=(23, 8))
-sns.set(style="whitegrid", font_scale=1.5)  # Set the font scale to 1.5
-hue_order = [
-    "MobileNetV3",
-    "ResNet-18",
-    "EfficientNet_b4",
-]
-sns.boxplot(
-    x="family",
-    y="probabilities",
-    hue="model_name",
-    data=df,
-    palette="muted",
-    dodge=True,
-    gap=0.2,
-    linewidth=0.5,
-    fliersize=3,
-    hue_order=hue_order,
-)
-plt.xlabel("Family", fontsize=16)  # Increase the font size of the x-axis label
-plt.ylabel("Probabilities", fontsize=16)  # Increase the font size of the y-axis label
-plt.legend(loc="lower left", fontsize=16)  # Increase the font size of the legend
-plt.xticks(fontsize=12)  # Increase the font size of the x-axis tick labels
-plt.yticks(fontsize=16)  # Increase the font size of the y-axis tick labels
-plt.savefig(
-    os.path.join(
-        "./data/results",
-        "boxplot_allCNNs_correct.png",
-    ),
-    dpi=300,
-)
-plt.show()
+# # # Create a grouped error boxplot using Seaborn
+# plt.figure(figsize=(23, 8))
+# sns.set(style="whitegrid", font_scale=1.5)  # Set the font scale to 1.5
+# hue_order = [
+#     "MobileNetV3",
+#     "ResNet-18",
+#     "EfficientNet_b4",
+# ]
+# sns.boxplot(
+#     x="family",
+#     y="probabilities",
+#     hue="model_name",
+#     data=df,
+#     palette="muted",
+#     dodge=True,
+#     gap=0.2,
+#     linewidth=0.5,
+#     fliersize=3,
+#     hue_order=hue_order,
+# )
+# plt.xlabel("Family", fontsize=16)  # Increase the font size of the x-axis label
+# plt.ylabel("Probabilities", fontsize=16)  # Increase the font size of the y-axis label
+# plt.legend(loc="lower left", fontsize=16)  # Increase the font size of the legend
+# plt.xticks(fontsize=12)  # Increase the font size of the x-axis tick labels
+# plt.yticks(fontsize=16)  # Increase the font size of the y-axis tick labels
+# plt.savefig(
+#     os.path.join(
+#         "./data/results",
+#         "boxplot_allCNNs_correct.png",
+#     ),
+#     dpi=300,
+# )
+# plt.show()
 
-# Calculate the mean probability per class for all model_names
-mean_probabilities = df.groupby(["model_name", "family"])["probabilities"].mean()
+# # Calculate the mean probability per class for all model_names
+# mean_probabilities = df.groupby(["model_name", "family"])["probabilities"].mean()
 
-# Pivot the mean_probabilities DataFrame
-pivot_table = mean_probabilities.reset_index().pivot(
-    index="model_name", columns="family", values="probabilities"
-)
+# # Pivot the mean_probabilities DataFrame
+# pivot_table = mean_probabilities.reset_index().pivot(
+#     index="model_name", columns="family", values="probabilities"
+# )
 
-# Convert the pivot table values to xx.xx% formatSt
-pivot_table_humanreadable = pivot_table.applymap(lambda x: f"{x:.2%}")
+# # Convert the pivot table values to xx.xx% formatSt
+# pivot_table_humanreadable = pivot_table.applymap(lambda x: f"{x:.2%}")
 
-# Print the pivot table
-print(pivot_table_humanreadable)
+# # Print the pivot table
+# print(pivot_table_humanreadable)
 
 # Export the pivot table as a LaTeX-style table to a .txt file
 # with open(

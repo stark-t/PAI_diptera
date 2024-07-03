@@ -1,13 +1,13 @@
 paths:
-    base_path:          "/mnt/data1/PAI_diptera"
-    data_path:          "/mnt/data1/PAI_diptera/image_data_filtered"
-    original_data_path: "/mnt/data1/PAI_diptera/image_data"
+    base_path:          "/mnt/data2/PAI_diptera"
+    data_path:          "/mnt/data2/PAI_diptera/image_data_filtered"
+    original_data_path: "/mnt/data2/PAI_diptera/image_data"
     prediction_path:    "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # depends on parameters below
     model_path:         "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # depends on parameters below
     results_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # !!! Under results_path must be a folder named "models" and "predictions"
     images_stats_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_stats.csv"
 parameters:
-    model: efficientnet_b4 #vit_base_patch16_224  #efficientnet_b4  # resnet18  # efficientnet_b3  #   # stnet
+    model: resnet18 #vit_base_patch16_224  #efficientnet_b4  # resnet18  # efficientnet_b3  #   # stnet
     pretrained: True
     dropout: 0.5
     test_time_iterations: 100
@@ -24,4 +24,4 @@ parameters:
     optimizer: 'adam'
     verbose: 0 # verbose 0,1,2 or 3
     save_inference_images: True
-    seed: 1337 #99 #42
+    seed: 42 #99 #42

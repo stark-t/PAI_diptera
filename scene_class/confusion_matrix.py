@@ -18,6 +18,7 @@ def cm_analysis(
     filename=None,
     filename_tex=None,
     plot=None,
+    fontsize=12,
 ):
     """
     Generate matrix plot of confusion matrix with pretty annotations.
@@ -52,7 +53,7 @@ def cm_analysis(
             p = cm_perc[i, j]
             if i == j:
                 s = cm_sum[i]
-                annot[i, j] = "%.1f%%\n%d/%d" % (p, c, s)
+                annot[i, j] = "%.1f%%\n%d/ \n   %d" % (p, c, s)
             elif c == 0:
                 annot[i, j] = ""
             else:
@@ -67,14 +68,17 @@ def cm_analysis(
         ax=ax,
         cmap="Blues",
         square=True,
-        annot_kws={"size": 8},
+        cbar=False,
+        annot_kws={"size": fontsize},
     )
-    ax.set_xlabel("\nPredicted")
-    ax.set_ylabel("Actual\n")
+    ax.set_xticklabels(ax.get_xticklabels(), fontsize=fontsize, rotation=90)
+    ax.set_yticklabels(ax.get_yticklabels(), fontsize=fontsize, rotation=360)
+    ax.set_xlabel("\nPredicted", fontsize=fontsize)
+    ax.set_ylabel("Actual\n", fontsize=fontsize)
     ax.figure.tight_layout()
-    ax.figure.subplots_adjust(bottom=0.2)
+    # ax.figure.subplots_adjust(bottom=0.2)
     if filename is not None:
-        plt.savefig(filename, dpi=600)
+        plt.savefig(filename, dpi=300)
     if plot is not None:
         plt.show()
         plt.close()
@@ -83,27 +87,16 @@ def cm_analysis(
     else:
         plt.close()
 
-    # if filename_tex is not None :
-    #     with open(filename_tex, 'w') as f:
-    #         f.write(
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}, \n'
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}, \n'
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}, \n'
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}, \n'
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}, \n'
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}, \n'
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}, \n'
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}, \n'
-    #             '{{{:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}, {:6.1f}}}'.format(
-    #                 cm[0, 0], cm[0, 1], cm[0, 2], cm[0, 3], cm[0, 4], cm[0, 5], cm[0, 6], cm[0, 7], cm[0, 8],
-    #                 cm[1, 0], cm[1, 1], cm[1, 2], cm[1, 3], cm[1, 4], cm[1, 5], cm[1, 6], cm[1, 7], cm[1, 8],
-    #                 cm[2, 0], cm[2, 1], cm[2, 2], cm[2, 3], cm[2, 4], cm[2, 5], cm[2, 6], cm[2, 7], cm[2, 8],
-    #                 cm[3, 0], cm[3, 1], cm[3, 2], cm[3, 3], cm[3, 4], cm[3, 5], cm[3, 6], cm[3, 7], cm[3, 8],
-    #                 cm[4, 0], cm[4, 1], cm[4, 2], cm[4, 3], cm[4, 4], cm[4, 5], cm[4, 6], cm[4, 7], cm[4, 8],
-    #                 cm[5, 0], cm[5, 1], cm[5, 2], cm[5, 3], cm[5, 4], cm[5, 5], cm[5, 6], cm[5, 7], cm[5, 8],
-    #                 cm[6, 0], cm[6, 1], cm[6, 2], cm[6, 3], cm[6, 4], cm[6, 5], cm[6, 6], cm[6, 7], cm[6, 8],
-    #                 cm[7, 0], cm[7, 1], cm[7, 2], cm[7, 3], cm[7, 4], cm[7, 5], cm[7, 6], cm[7, 7], cm[7, 8],
-    #                 cm[8, 0], cm[8, 1], cm[8, 2], cm[8, 3], cm[8, 4], cm[8, 5], cm[8, 6], cm[8, 7], cm[8, 8],
-    #             ))
+    if filename_tex is not None :
+        with open(filename_tex, 'w') as f:
+            for i in range(len(labels)):
+                for j in range(len(labels)):
+                    f.write("{:6.1f}".format(cm[i, j]))
+                    if j != len(labels) - 1:
+                        f.write(", ")
+                    else:
+                        f.write("\n")
+            if i != len(labels) - 1:
+                f.write(", ")
 
     return cm_pd

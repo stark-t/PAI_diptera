@@ -94,18 +94,16 @@ def main(config):
 
     # Group the dataframe by "family"
     grouped_by_family = df_test.groupby("family")
-
+    print(df_test.head())
     # Iterate over each group
     for family, group in grouped_by_family:
-        # Find the filename with the highest std
+        # Find the probabilities for each model for the highest and lowest std filename and its filename
         highest_std_filename = group.loc[
             group["std_probabilities"].idxmax(), "file_path"
         ]
-        # Find the filename with the lowest std
         lowest_std_filename = group.loc[
             group["std_probabilities"].idxmin(), "file_path"
         ]
-
         highest_std_MobileNetV3 = group.loc[
             group["std_probabilities"].idxmax(), "probabilities_MobileNetV3"
         ]
@@ -115,7 +113,6 @@ def main(config):
         highest_std_EfficientNet = group.loc[
             group["std_probabilities"].idxmax(), "probabilities_EfficientNet_b4"
         ]
-
         lowest_std_MobileNetV3 = group.loc[
             group["std_probabilities"].idxmin(), "probabilities_MobileNetV3"
         ]
@@ -126,15 +123,43 @@ def main(config):
             group["std_probabilities"].idxmin(), "probabilities_EfficientNet_b4"
         ]
 
+
         # Create a new directory for the figures
-        figures_dir = "./data/results/figures"
-        os.makedirs(figures_dir, exist_ok=True)
+        figures_highest_std_dir = "/mnt/data1/PAI_diptera/results/figures_highest_std"
+        os.makedirs(figures_highest_std_dir, exist_ok=True)
+        figures_lowest_std_dir = "/mnt/data1/PAI_diptera/results/figures_lowest_std"
+        os.makedirs(figures_lowest_std_dir, exist_ok=True)
+
 
         # Print the results
         # Copy highest_std_filename and lowest_std_filename into data/results/std_figures
         os.makedirs("data/results/std_figures", exist_ok=True)
-        shutil.copy(highest_std_filename, "data/results/std_figures")
-        shutil.copy(lowest_std_filename, "data/results/std_figures")
+        # highest_std_filename = highest_std_filename.replace(config["paths"]["data_path"], "/mnt/data1/PAI_diptera/image_data_filterednoBB")
+        # lowest_std_filename = lowest_std_filename.replace(config["paths"]["data_path"], "/mnt/data1/PAI_diptera/image_data_filterednoBB")
+        shutil.copy(highest_std_filename, figures_highest_std_dir)
+        shutil.copy(lowest_std_filename, figures_lowest_std_dir)
+
+        # Create a text file with the same file name as highest_std_filename
+        txt_filename = os.path.splitext(os.path.basename(highest_std_filename))[0] + ".txt"
+        txt_filepath = os.path.join(figures_highest_std_dir, txt_filename)
+        with open(txt_filepath, "w") as f:
+            # Write the family name, filename, and highest std for each model
+            f.write(f"Family: {family}\n")
+            f.write(f"Filename: {highest_std_filename}\n")
+            f.write(f"MobileNetV3: {highest_std_MobileNetV3}\n")
+            f.write(f"ResNet-18: {highest_std_ResNet18}\n")
+            f.write(f"EfficientNet: {highest_std_EfficientNet}\n")
+        
+        # Create a text file with the same file name as lowest_std_filename
+        txt_filename = os.path.splitext(os.path.basename(lowest_std_filename))[0] + ".txt"
+        txt_filepath = os.path.join(figures_lowest_std_dir, txt_filename)
+        with open(txt_filepath, "w") as f:
+            # Write the family name, filename, and lowest std for each model
+            f.write(f"Family: {family}\n")
+            f.write(f"Filename: {lowest_std_filename}\n")
+            f.write(f"MobileNetV3: {lowest_std_MobileNetV3}\n")
+            f.write(f"ResNet-18: {lowest_std_ResNet18}\n")
+            f.write(f"EfficientNet: {lowest_std_EfficientNet}\n")
 
         print(f"Family: {family}")
         print(f"Highest Std Filename: {highest_std_filename}")

@@ -87,7 +87,8 @@ def run_predict(config, ckpt="checkpoint_path"):
 
     all_predictions = []
 
-    for _ in range(config["parameters"]["test_time_iterations"]):
+    for i in range(config["parameters"]["test_time_iterations"]):
+
         test_loader = DataLoader(test_set, batch_size=16, num_workers=10, shuffle=False)
 
         # Model
@@ -97,6 +98,14 @@ def run_predict(config, ckpt="checkpoint_path"):
             model = LitClassifier(config=config)
         checkpoint = torch.load(ckpt)
         model.load_state_dict(checkpoint["state_dict"])
+
+        # Print the loaded checkpoint and current/total iterations
+        print("Loaded checkpoint:", ckpt)
+        print(
+            "{}/{} iterations".format(
+                i + 1, config["parameters"]["test_time_iterations"]
+            )
+        )
 
         # Set the model in training mode to enable dropout during prediction
         model.train()
@@ -182,7 +191,9 @@ def run_predict(config, ckpt="checkpoint_path"):
         plot=True,
         filename=os.path.join(log_console_path, "cm.png"),
     )
-
+    print(
+        "Confusion Matrix saved to: {}".format(os.path.join(log_console_path, "cm.png"))
+    )
     # Class probability
     # Create a DataFrame
     data = {
@@ -198,7 +209,11 @@ def run_predict(config, ckpt="checkpoint_path"):
 
     df = pd.DataFrame(data)
     df.to_csv(os.path.join(log_console_path, "probabilities.csv"))
-
+    print(
+        "Probabilities saved to: {}".format(
+            os.path.join(log_console_path, "probabilities.csv")
+        )
+    )
     # Extract the first three letters of labels_family for legend
     df["family_short"] = df["family"].str[:3]
 
@@ -211,6 +226,7 @@ def run_predict(config, ckpt="checkpoint_path"):
     plt.ylabel("Probabilities")
     plt.show()
     plt.savefig(os.path.join(log_console_path, "box.png"), dpi=600)
+    print("Boxplot saved to: {}".format(os.path.join(log_console_path, "box.png")))
 
 
 if __name__ == "__main__":
@@ -224,10 +240,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default="/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/efficientnet_b4/24030109/checkpoints/epoch=69-step=153650.ckpt",
+        default="/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/resnet18/24061216/checkpoints/epoch=54-step=120725.ckpt",
         help="Path to checkpoint file",
     )
-
+    # "Y:\projects\2023_PAI\2023_PAI_diptera\PAI_diptera\logs\efficientnet_b4\24061012\checkpoints\epoch=46-step=103165.ckpt"
     args = parser.parse_args()
 
     with open(args.config, "r") as f:
