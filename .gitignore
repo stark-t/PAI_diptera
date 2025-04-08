@@ -159,3 +159,11 @@ data/results/resutls/seresnext32x4d_probabilities.csv
 data/results/resutls/stnet_probabilities.csv
 nohup.out
 nohup.out
+
+# R-related
+.Rproj.user
+.Rhistory
+*.Rproj
+
+# Local on VS's computer
+architectures/
