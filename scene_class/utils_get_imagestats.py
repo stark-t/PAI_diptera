@@ -79,7 +79,7 @@ def main(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str,
-                default='/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/config.yaml',
+                default='/.../PAI_diptera/scene_class/config.yaml',
                 help='Path to YAML config file')
     args = parser.parse_args()
 

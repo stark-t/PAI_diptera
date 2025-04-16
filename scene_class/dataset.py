@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
-import cv2
 import os
-from glob import glob
+import cv2
 import array
 
 import torch
@@ -18,7 +17,7 @@ class Dataset(TorchDataset):
         self.path = path
         self.norm = norm
         self.config = config
-        self.file_paths = path  # list(iglob(self.path))
+        self.file_paths = path
 
 
     def __len__(self):
@@ -37,7 +36,6 @@ class Dataset(TorchDataset):
         # read image
         image = cv2.imread(self.file_paths[idx])
         image = pad_to_imgsize(image, self.config["parameters"]["image_size"])
-        # image = cv2.resize(image, (self.config["parameters"]["image_size"], self.config["parameters"]["image_size"]))
 
         if self.config['parameters']['normalization'] == 'znorm':
             image = normalize(image, img_means, img_stds)

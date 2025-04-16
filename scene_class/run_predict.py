@@ -234,16 +234,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default="/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/scene_class/config.yaml",
+        default="/.../PAI_diptera/scene_class/config.yaml",
         help="Path to YAML config file",
     )
     parser.add_argument(
         "--checkpoint_path",
         type=str,
-        default="/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs/resnet18/24061216/checkpoints/epoch=54-step=120725.ckpt",
+        default="/.../PAI_diptera/logs/resnet18/24061216/checkpoints/epoch=54-step=120725.ckpt",
         help="Path to checkpoint file",
     )
-    # "Y:\projects\2023_PAI\2023_PAI_diptera\PAI_diptera\logs\efficientnet_b4\24061012\checkpoints\epoch=46-step=103165.ckpt"
     args = parser.parse_args()
 
     with open(args.config, "r") as f:
@@ -253,7 +252,7 @@ if __name__ == "__main__":
     if args.checkpoint_path == "None":
         model_name = config["parameters"]["model"]
         model_base_path = os.path.join(
-            "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera/logs",
+            "/.../PAI_diptera/logs",
             model_name,
         )
         model_dir = [
