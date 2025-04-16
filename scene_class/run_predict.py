@@ -17,7 +17,6 @@ import pytorch_lightning as lit
 
 from dataset import Dataset
 from model_lit import LitClassifier
-from model_STnet import LitClassifier as LitClassifier_STnet
 from utils_get_console_output import get_console_output
 
 from confusion_matrix import cm_analysis
