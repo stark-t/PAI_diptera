@@ -1,17 +1,17 @@
 paths:
-    data_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_data_filtered"
-    model_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # depends on parameters below
-    original_data_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_data"
-    prediction_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # depends on parameters below
-    results_path: "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/PAI_diptera" # !!! Under results_path must be a folder named "models" and "predictions"
+    data_path: "/../../image_data_filtered"
+    model_path: "/../../PAI_diptera"
+    original_data_path: "/../../image_data_filtered"
+    prediction_path: "/../../PAI_diptera"
+    results_path: "/../../PAI_diptera"
     images_stats_path: "/mnt/ushelf_star_th/data/PAI_diptera/image_stats.csv"
 parameters:
-    model: resnet18  # stnet
+    model: resnet18  # efficientnetb4 # mobilenetv3_large
     bit_depth: 8
     epochs: 100
     image_size: 640 # only select image sizes devisible by 32
     learningrate: 0.001
-    learningrate_sheduler: 'CosineAnnealingWarmRestarts'  # 'cosine'
+    learningrate_sheduler: 'CosineAnnealingWarmRestarts'
     model: resnet18
     normalization: simple
     num_classes: 8
