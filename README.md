@@ -10,7 +10,7 @@ Stark, T., Wurm, M., Ștefan, V., Wolf, F., Taubenböck, H., & Knight, T. M. (20
 
 ---
 
-## Extgended Literature
+## Extended Literature
 
 Stark, T., Ştefan, V., Wurm, M., Spanier, R., Taubenböck, H., & Knight, T. M. (2023). YOLO object detection models can locate and classify broad groups of flower-visiting arthropods in images. Scientific reports, 13(1), 16364.
 

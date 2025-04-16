@@ -11,6 +11,7 @@ data/results/*
 *.png
 events.out.*
 *.txt
+!requirements.txt
 history
 *.csv
 !data/PAI_Diptera_family_GBIF/*.csv
