@@ -1,14 +1,20 @@
 # Utilizing CNNs for Classification and Uncertainty Quantification for 15 Families of European Fly Pollinators
 
-Stark, T., Wurm, M., Ștefan, V., Wolf, F., Taubenböck, H., & Knight, T. M. (2025). *Utilizing CNNs for classification and uncertainty quantification for 15 families of European fly pollinators*. In review. Soon to be available on bioRxiv.
-
 ---
 
 ## Abstract
 
 Pollination is essential for maintaining biodiversity and ensuring food security, and in Europe it is primarily mediated by four insect orders (Coleoptera, Diptera, Hymenoptera, Lepidoptera). However, traditional monitoring methods are costly and time consuming. Although recent automation efforts have focused on butterflies and bees, flies, a diverse and ecologically important group of pollinators—have received comparatively little attention. In this study, we investigate the use of CNNs to classify 15 European pollinating fly families and quantify classification uncertainty. EfficientNetB4 achieved an accuracy of up to 95.61%, with cropped inputs (based on bounding boxes) improving both accuracy and confidence. This approach marks a significant step forward in automated pollinator monitoring.
 
+Stark, T., Wurm, M., Ștefan, V., Wolf, F., Taubenböck, H., & Knight, T. M. (2025). *Utilizing CNNs for classification and uncertainty quantification for 15 families of European fly pollinators*. In review. Soon to be available on bioRxiv.
+
 ---
+
+## Extgended Literature
+
+Stark, T., Ştefan, V., Wurm, M., Spanier, R., Taubenböck, H., & Knight, T. M. (2023). YOLO object detection models can locate and classify broad groups of flower-visiting arthropods in images. Scientific reports, 13(1), 16364.
+
+Ștefan, V., Stark, T., Wurm, M., Taubenböck, H., & Knight, T. M. (2025). Successes and limitations of pretrained YOLO detectors applied to unseen time-lapse images for automated pollinator monitoring.
 
 ## How to Use This Repository
 
