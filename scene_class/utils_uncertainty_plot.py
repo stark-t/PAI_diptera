@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 # Get all the csv files in the results folder
-csv_files = glob.glob("data/results/pretrained_BB/.csv")
+csv_files = glob.glob("data/results/pretrained_noBB/*.csv")
 
 # Create an empty DataFrame to store the combined data
 combined_df = pd.DataFrame()
@@ -45,8 +45,8 @@ for file in csv_files:
 print(combined_df.tail())
 
 # Filter the combined_df based on labels == prediction
-df = combined_df[combined_df["labels"] == combined_df["prediction"]]
-
+# df = combined_df[combined_df["labels"] == combined_df["prediction"]]
+df = combined_df
 # # # Create a grouped error boxplot using Seaborn
 # plt.figure(figsize=(23, 8))
 # sns.set(style="whitegrid", font_scale=1.5)  # Set the font scale to 1.5

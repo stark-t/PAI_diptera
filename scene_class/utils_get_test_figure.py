@@ -5,23 +5,9 @@ import pandas as pd
 import yaml
 from glob import iglob
 from sklearn.model_selection import train_test_split
-import sys
 import shutil
-from datetime import datetime
-import warnings
-
 import torch
 from pytorch_lightning import seed_everything
-from torch.utils.data import DataLoader
-
-import pytorch_lightning as lit
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-from pytorch_lightning.callbacks import TQDMProgressBar
-
-from dataset import Dataset
-from model_lit import LitClassifier
-from model_STnet import LitClassifier as LitClassifier_STnet
 import os
 
 torch.set_float32_matmul_precision("medium")
@@ -49,129 +35,175 @@ def main(config):
         group_val, group_test = train_test_split(
             group_temp, test_size=0.5, random_state=config["parameters"]["seed"]
         )
-        # _ = pd.concat([df_train, group_train])
-        # _ = pd.concat([df_val, group_val])
+        df_train = pd.concat([df_train, group_train])
+        df_val = pd.concat([df_val, group_val])
         df_test = pd.concat([df_test, group_test])
 
-    # print column names
-    # print(df_test.columns)
-    # print(df_test["file_name"].head())
 
-    pretrained_BB_predictions = list(iglob("data/results/pretrained_BB/*.csv"))
+    # Create a markdown table
+    print("| Family | Number of Images | Unique Species | Unique Genus |")
+    print("|--------|-----------------|----------------|--------------|")
+    for family in sorted(file_df["family"].unique()):
+        num_images = file_df[file_df["family"] == family].shape[0]
+        unique_species = file_df[file_df["family"] == family]["species"].nunique()
+        unique_genus = file_df[file_df["family"] == family]["genus"].nunique()
+        print(f"| {family} | {num_images} | {unique_species} | {unique_genus} |")
 
-    # Create dataframe with all predictions from the list of pretrained_BB_predictions
-    combined_df = pd.DataFrame()
-    for file in pretrained_BB_predictions:
+    print("| Family | Train | Validation | Test |")
+    print("|--------|-------|------------|------|")
+    for family in sorted(df_train["family"].unique()):
+        train_count = df_train[df_train["family"] == family].shape[0]
+        val_count = df_val[df_val["family"] == family].shape[0]
+        test_count = df_test[df_test["family"] == family].shape[0]
+        print(f"| {family} | {train_count} | {val_count} | {test_count} |")
+
+
+    # print("| Family | Train Species | Train Genus | Validation Species | Validation Genus | Test Species | Test Genus |")
+    # print("|--------|---------------|-------------|--------------------|------------------|--------------|------------|")
+    # for family in sorted(df_train["family"].unique()):
+    #     train_species_count = df_train[df_train["family"] == family]["species"].nunique()
+    #     train_genus_count = df_train[df_train["family"] == family]["genus"].nunique()
+    #     val_species_count = df_val[df_val["family"] == family]["species"].nunique()
+    #     val_genus_count = df_val[df_val["family"] == family]["genus"].nunique()
+    #     test_species_count = df_test[df_test["family"] == family]["species"].nunique()
+    #     test_genus_count = df_test[df_test["family"] == family]["genus"].nunique()
+    #     print(f"| {family} | {train_species_count} | {train_genus_count} | {val_species_count} | {val_genus_count} | {test_species_count} | {test_genus_count} |")
+
+    df_test.reset_index(drop=True, inplace=True)
+    df_test["index"] = df_test.index
+    print(df_test.head())
+    probability_files_BB = list(iglob("data/results/pretrained_BB/*.csv"))
+    probability_files_noBB = list(iglob("data/results/pretrained_noBB/*.csv"))
+
+    # Read all csv files as separate dataframes
+    df_modellist = []
+    for file in probability_files_BB + probability_files_noBB:
+        if "noBB" in file:
+            BB = False
+        else:
+            BB = True
+
+        modelname = file.split(os.sep)[-1].split(".csv")[0]
+
         df = pd.read_csv(file)
-        model_name = file.split(os.sep)[-1].split(".csv")[0]
-        df["model_name"] = model_name
-        # Rename probabilties and predictions by joining the model_name to the column name
-        df = df.rename(
-            columns={
-                "probabilities": "probabilities_" + model_name,
-                "prediction": "prediction_" + model_name,
-            }
-        )
-        # From df select only prediction and probabilities columns
-        df_selection = df[["prediction_" + model_name, "probabilities_" + model_name]]
-        # print(df_selection.head())
 
-        df_test.reset_index(drop=True, inplace=True)
-        df_selection.reset_index(drop=True, inplace=True)
-        df_test = df_test.join(df_selection)
+        df["modelname"] = modelname
+        df["BB"] = BB
+        df["index"] = df.index
 
-    # print column names
-    # print(df_test.columns)
+        df_merge = df_test.merge(df, on="index")
 
-    # Calculate the standard deviation for the columns "probabilities_ResNet", "probabilities_Efficientnet", and "probabilities_mobilenet"
-    df_test["std_probabilities"] = df_test[
+        df_modellist.append(df_merge)
+
+    dfs = pd.concat(df_modellist)
+
+    dfs.drop(columns=["family_y"], inplace=True)
+    dfs.rename(columns={"family_x": "family"}, inplace=True)
+    print(dfs.columns)
+
+    # Group the dataframe by "file_path"
+    grouped_by_file = dfs.groupby("file_path")
+
+    # Calculate the standard deviation for the probabilities column
+    df_std = grouped_by_file["probabilities"].std()
+    df_std = pd.DataFrame(df_std)
+    df_std.rename(columns={"probabilities": "std"}, inplace=True)
+
+    dfs = dfs.merge(df_std, on="file_path", how="left")
+
+    dfs.drop(columns=["file_name", "genus", "index", "Unnamed: 0"], inplace=True)
+
+    print(dfs.head())
+
+    # Get some wrong classifications
+    fanniidae_wrong_classifications = dfs[
+        (dfs["family"] == "Fanniidae")
+        & ((dfs["prediction"] == 7) | (dfs["prediction"] == 14))
+        & (dfs["modelname"] == "EfficientNet_b4")
+        & (dfs["BB"] == True)
+    ]
+    print("fanniidae_wrong_classifications")
+    print(fanniidae_wrong_classifications["file_path"].apply(os.path.basename))
+
+    muscidae_wrong_classifications = dfs[
+        (dfs["family"] == "Muscidae")
+        & ((dfs["prediction"] == 5) | (dfs["prediction"] == 14))
+        & (dfs["modelname"] == "EfficientNet_b4")
+        & (dfs["BB"] == True)
+    ]
+    print("muscidae_wrong_classifications")
+    print(muscidae_wrong_classifications["file_path"].apply(os.path.basename))
+
+    tachinidae_wrong_classifications = dfs[
+        (dfs["family"] == "Tachinidae")
+        & ((dfs["prediction"] == 5) | (dfs["prediction"] == 7))
+        & (dfs["modelname"] == "EfficientNet_b4")
+        & (dfs["BB"] == True)
+    ]
+    print("tachinidae_wrong_classifications")
+    print(tachinidae_wrong_classifications["file_path"].apply(os.path.basename))
+
+    # Concatenate the dataframes into a single one
+    wrong_classifications = pd.concat(
         [
-            "probabilities_ResNet-18",
-            "probabilities_EfficientNet_b4",
-            "probabilities_MobileNetV3",
+            fanniidae_wrong_classifications,
+            muscidae_wrong_classifications,
+            tachinidae_wrong_classifications,
         ]
-    ].std(axis=1)
+    )
+
+    # Save the concatenated dataframe as a CSV file
+    save_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/paper/figures/all_images"
+    wrong_classifications.to_csv(
+        os.path.join(save_path, "wrong_classifications.csv"), index=False
+    )
+
+    # Copy files in wrong_classifications filepath to save_path
+    save_path_wrong_classifications = os.path.join(save_path, "wrong_classifications")
+    os.makedirs(save_path_wrong_classifications, exist_ok=True)
+    for index, row in wrong_classifications.iterrows():
+        file_name = os.path.basename(row["file_path"])
+
+        src_path = os.path.join(
+            "/mnt/data2/PAI_diptera/image_data", row["family"], file_name
+        )
+        destination_path = os.path.join(save_path_wrong_classifications, file_name)
+        shutil.copy(src_path, destination_path)
+
+    dfs = dfs[dfs["labels"] == dfs["prediction"]]
 
     # Group the dataframe by "family"
-    grouped_by_family = df_test.groupby("family")
-    print(df_test.head())
+    grouped_by_family = dfs.groupby("family")
+
     # Iterate over each group
+    records = []
     for family, group in grouped_by_family:
-        # Find the probabilities for each model for the highest and lowest std filename and its filename
-        highest_std_filename = group.loc[
-            group["std_probabilities"].idxmax(), "file_path"
-        ]
-        lowest_std_filename = group.loc[
-            group["std_probabilities"].idxmin(), "file_path"
-        ]
-        highest_std_MobileNetV3 = group.loc[
-            group["std_probabilities"].idxmax(), "probabilities_MobileNetV3"
-        ]
-        highest_std_ResNet18 = group.loc[
-            group["std_probabilities"].idxmax(), "probabilities_ResNet-18"
-        ]
-        highest_std_EfficientNet = group.loc[
-            group["std_probabilities"].idxmax(), "probabilities_EfficientNet_b4"
-        ]
-        lowest_std_MobileNetV3 = group.loc[
-            group["std_probabilities"].idxmin(), "probabilities_MobileNetV3"
-        ]
-        lowest_std_ResNet18 = group.loc[
-            group["std_probabilities"].idxmin(), "probabilities_ResNet-18"
-        ]
-        lowest_std_EfficientNet = group.loc[
-            group["std_probabilities"].idxmin(), "probabilities_EfficientNet_b4"
+
+        # Sort group by "std" column
+        group = group.sort_values(by="std", ascending=False)
+
+        same_std_rows = group[
+            group["std"].duplicated(keep=False)
+            & (group["std"].map(group["std"].value_counts()) == 6)
         ]
 
+        # Save df to csv
+        save_path = "/mnt/ushelf_star_th/projects/2023_PAI/2023_PAI_diptera/paper/figures/all_images"
+        save_path_family = os.path.join(save_path, family)
+        os.makedirs(save_path_family, exist_ok=True)
+        same_std_rows.to_csv(os.path.join(save_path_family, "stats.csv"), index=False)
 
-        # Create a new directory for the figures
-        figures_highest_std_dir = "/mnt/data1/PAI_diptera/results/figures_highest_std"
-        os.makedirs(figures_highest_std_dir, exist_ok=True)
-        figures_lowest_std_dir = "/mnt/data1/PAI_diptera/results/figures_lowest_std"
-        os.makedirs(figures_lowest_std_dir, exist_ok=True)
+        # Copy file_path to save_path
+        save_path_family_images = os.path.join(save_path, family, "images")
+        os.makedirs(save_path_family_images, exist_ok=True)
+        for index, row in same_std_rows.iterrows():
+            file_name = os.path.basename(row["file_path"])
 
-
-        # Print the results
-        # Copy highest_std_filename and lowest_std_filename into data/results/std_figures
-        os.makedirs("data/results/std_figures", exist_ok=True)
-        # highest_std_filename = highest_std_filename.replace(config["paths"]["data_path"], "/mnt/data1/PAI_diptera/image_data_filterednoBB")
-        # lowest_std_filename = lowest_std_filename.replace(config["paths"]["data_path"], "/mnt/data1/PAI_diptera/image_data_filterednoBB")
-        shutil.copy(highest_std_filename, figures_highest_std_dir)
-        shutil.copy(lowest_std_filename, figures_lowest_std_dir)
-
-        # Create a text file with the same file name as highest_std_filename
-        txt_filename = os.path.splitext(os.path.basename(highest_std_filename))[0] + ".txt"
-        txt_filepath = os.path.join(figures_highest_std_dir, txt_filename)
-        with open(txt_filepath, "w") as f:
-            # Write the family name, filename, and highest std for each model
-            f.write(f"Family: {family}\n")
-            f.write(f"Filename: {highest_std_filename}\n")
-            f.write(f"MobileNetV3: {highest_std_MobileNetV3}\n")
-            f.write(f"ResNet-18: {highest_std_ResNet18}\n")
-            f.write(f"EfficientNet: {highest_std_EfficientNet}\n")
-        
-        # Create a text file with the same file name as lowest_std_filename
-        txt_filename = os.path.splitext(os.path.basename(lowest_std_filename))[0] + ".txt"
-        txt_filepath = os.path.join(figures_lowest_std_dir, txt_filename)
-        with open(txt_filepath, "w") as f:
-            # Write the family name, filename, and lowest std for each model
-            f.write(f"Family: {family}\n")
-            f.write(f"Filename: {lowest_std_filename}\n")
-            f.write(f"MobileNetV3: {lowest_std_MobileNetV3}\n")
-            f.write(f"ResNet-18: {lowest_std_ResNet18}\n")
-            f.write(f"EfficientNet: {lowest_std_EfficientNet}\n")
-
-        print(f"Family: {family}")
-        print(f"Highest Std Filename: {highest_std_filename}")
-        print(f"MobileNetV3: {highest_std_MobileNetV3}")
-        print(f"ResNet-18: {highest_std_ResNet18}")
-        print(f"EfficientNet: {highest_std_EfficientNet}")
-        print()
-        print(f"Lowest Std Filename: {lowest_std_filename}")
-        print(f"MobileNetV3: {lowest_std_MobileNetV3}")
-        print(f"ResNet-18: {lowest_std_ResNet18}")
-        print(f"EfficientNet: {lowest_std_EfficientNet}")
-        print()
+            src_path = os.path.join(
+                "/mnt/data2/PAI_diptera/image_data", family, file_name
+            )
+            destination_path = os.path.join(save_path_family_images, file_name)
+            shutil.copy(src_path, destination_path)
 
 
 if __name__ == "__main__":

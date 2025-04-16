@@ -20,7 +20,6 @@ from pytorch_lightning.callbacks import TQDMProgressBar
 
 from dataset import Dataset
 from model_lit import LitClassifier
-from model_STnet import LitClassifier as LitClassifier_STnet
 
 torch.set_float32_matmul_precision("medium")
 
@@ -120,10 +119,7 @@ def main(config, log_itmes):
     ]
 
     # Model
-    if config["parameters"]["model"] == "STnet":
-        model = LitClassifier_STnet(config=config)
-    else:
-        model = LitClassifier(config=config)
+    model = LitClassifier(config=config)
 
     warnings.warn("Start training")
     warnings.warn("Print loggings can be found in log-file only")
